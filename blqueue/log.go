@@ -13,10 +13,6 @@ type LogMetrics struct {
 	queue string
 }
 
-var (
-	_ = NewLogMetrics
-)
-
 func NewLogMetrics(queueKey string) *LogMetrics {
 	m := &LogMetrics{queue: queueKey}
 	return m
@@ -57,4 +53,3 @@ func (m *LogMetrics) QueuePull() {
 func (m *LogMetrics) QueueLeak() {
 	log.Printf("queue %s: queue leak\n", m.queue)
 }
-

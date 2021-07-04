@@ -2,6 +2,11 @@ package blqueue
 
 import "github.com/prometheus/client_golang/prometheus"
 
+var (
+	_ = NewLogMetrics
+	_ = NewPrometheusMetrics
+)
+
 func init() {
 	promWorkerIdle = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "queue_workers_idle",
