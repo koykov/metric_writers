@@ -3,6 +3,7 @@ package cbytecache
 import "github.com/prometheus/client_golang/prometheus"
 
 var (
+	_ = NewLogMetrics
 	_ = NewPrometheusMetrics
 )
 
@@ -36,4 +37,6 @@ func init() {
 		Name: "cbytecache_corrupt",
 		Help: "Count corrupted entries.",
 	}, []string{"cache"})
+
+	prometheus.MustRegister(promCacheSize, promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted)
 }

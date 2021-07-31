@@ -1,6 +1,8 @@
 package cbytecache
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // Metrics writer to Prometheus.
 type PrometheusMetrics struct {
@@ -13,8 +15,8 @@ var (
 	promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted *prometheus.CounterVec
 )
 
-func NewPrometheusMetrics(cache string) *PrometheusMetrics {
-	m := &PrometheusMetrics{cache: cache}
+func NewPrometheusMetrics(cacheKey string) *PrometheusMetrics {
+	m := &PrometheusMetrics{cache: cacheKey}
 	return m
 }
 
