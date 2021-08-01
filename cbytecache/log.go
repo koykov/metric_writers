@@ -14,7 +14,15 @@ func NewLogMetrics(cache string) *LogMetrics {
 	return m
 }
 
-func (m *LogMetrics) Set(len int) {
+func (m *LogMetrics) Grow(size uint32) {
+	log.Printf("cbytecache %s: grow with size %d\n", m.cache, size)
+}
+
+func (m *LogMetrics) Reduce(size uint32) {
+	log.Printf("cbytecache %s: reduce with size %d\n", m.cache, size)
+}
+
+func (m *LogMetrics) Set(len uint16) {
 	log.Printf("cbytecache %s: set new entry with len %d\n", m.cache, len)
 }
 
@@ -22,18 +30,18 @@ func (m *LogMetrics) Miss() {
 	log.Printf("cbytecache %s: cache miss\n", m.cache)
 }
 
-func (m *LogMetrics) HitOK() {
+func (m *LogMetrics) Hit() {
 	log.Printf("cbytecache %s: cache hit\n", m.cache)
 }
 
-func (m *LogMetrics) HitExpired() {
+func (m *LogMetrics) Expire() {
 	log.Printf("cbytecache %s: hit expired entry\n", m.cache)
 }
 
-func (m *LogMetrics) HitCorrupted() {
+func (m *LogMetrics) Corrupt() {
 	log.Printf("cbytecache %s: hit corrupted entry\n", m.cache)
 }
 
-func (m *LogMetrics) Evict(len int) {
+func (m *LogMetrics) Evict(len uint16) {
 	log.Printf("cbytecache %s: evict entry with len %d\n", m.cache, len)
 }

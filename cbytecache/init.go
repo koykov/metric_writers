@@ -9,8 +9,16 @@ var (
 
 func init() {
 	promCacheSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "cbytecache_size",
-		Help: "Cache size in bytes.",
+		Name: "cbytecache_size_total",
+		Help: "Total cache size in bytes.",
+	}, []string{"cache"})
+	promCacheSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "cbytecache_size_used",
+		Help: "Used cache size in bytes.",
+	}, []string{"cache"})
+	promCacheSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "cbytecache_size_free",
+		Help: "Free cache size in bytes.",
 	}, []string{"cache"})
 
 	promCacheSet = prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -38,5 +46,6 @@ func init() {
 		Help: "Count corrupted entries.",
 	}, []string{"cache"})
 
-	prometheus.MustRegister(promCacheSize, promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted)
+	prometheus.MustRegister(promCacheSize, promCacheUsed, promCacheFree,
+		promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted)
 }
