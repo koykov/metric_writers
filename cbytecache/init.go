@@ -45,7 +45,11 @@ func init() {
 		Name: "cbytecache_corrupt",
 		Help: "Count corrupted entries.",
 	}, []string{"cache"})
+	promCacheNoSpace = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "cbytecache_no_space",
+		Help: "Count set attempts failed due to no space.",
+	}, []string{"cache"})
 
 	prometheus.MustRegister(promCacheSize, promCacheUsed, promCacheFree,
-		promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted)
+		promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted, promCacheNoSpace)
 }

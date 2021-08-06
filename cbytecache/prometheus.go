@@ -12,7 +12,8 @@ type PrometheusMetrics struct {
 var (
 	promCacheSize, promCacheUsed, promCacheFree *prometheus.GaugeVec
 
-	promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted *prometheus.CounterVec
+	promCacheSet, promCacheEvict, promCacheHit, promCacheMiss,
+	promCacheExpired, promCacheCorrupted, promCacheNoSpace *prometheus.CounterVec
 )
 
 func NewPrometheusMetrics(cacheKey string) *PrometheusMetrics {
@@ -20,19 +21,31 @@ func NewPrometheusMetrics(cacheKey string) *PrometheusMetrics {
 	return m
 }
 
-func (m *PrometheusMetrics) Grow(size uint32) {
+func (m *PrometheusMetrics) Alloc(size uint32) {
 	promCacheSize.WithLabelValues(m.cache).Add(float64(size))
 	promCacheFree.WithLabelValues(m.cache).Add(float64(size))
 }
 
-func (m *PrometheusMetrics) Reduce(len uint32) {
+func (m *PrometheusMetrics) Free(len uint32) {
+	promCacheUsed.WithLabelValues(m.cache).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.cache).Add(float64(len))
+}
+
+func (m *PrometheusMetrics) Release(len uint32) {
 	promCacheSize.WithLabelValues(m.cache).Add(-float64(len))
 	promCacheFree.WithLabelValues(m.cache).Add(-float64(len))
 }
 
 func (m *PrometheusMetrics) Set(len uint16) {
 	promCacheUsed.WithLabelValues(m.cache).Add(float64(len))
+	promCacheFree.WithLabelValues(m.cache).Add(-float64(len))
 	promCacheSet.WithLabelValues(m.cache).Add(1)
+}
+
+func (m *PrometheusMetrics) Evict(len uint16) {
+	promCacheUsed.WithLabelValues(m.cache).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.cache).Add(float64(len))
+	promCacheEvict.WithLabelValues(m.cache).Add(1)
 }
 
 func (m *PrometheusMetrics) Miss() {
@@ -51,7 +64,6 @@ func (m *PrometheusMetrics) Corrupt() {
 	promCacheCorrupted.WithLabelValues(m.cache).Add(1)
 }
 
-func (m *PrometheusMetrics) Evict(len uint16) {
-	promCacheUsed.WithLabelValues(m.cache).Add(-float64(len))
-	promCacheEvict.WithLabelValues(m.cache).Add(1)
+func (m *PrometheusMetrics) NoSpace() {
+	promCacheNoSpace.WithLabelValues(m.cache).Add(1)
 }
