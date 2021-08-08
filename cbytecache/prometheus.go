@@ -36,13 +36,13 @@ func (m *PrometheusMetrics) Release(len uint32) {
 	promCacheFree.WithLabelValues(m.cache).Add(-float64(len))
 }
 
-func (m *PrometheusMetrics) Set(len uint16) {
+func (m *PrometheusMetrics) Set(len uint32) {
 	promCacheUsed.WithLabelValues(m.cache).Add(float64(len))
 	promCacheFree.WithLabelValues(m.cache).Add(-float64(len))
 	promCacheSet.WithLabelValues(m.cache).Add(1)
 }
 
-func (m *PrometheusMetrics) Evict(len uint16) {
+func (m *PrometheusMetrics) Evict(len uint32) {
 	promCacheUsed.WithLabelValues(m.cache).Add(-float64(len))
 	promCacheFree.WithLabelValues(m.cache).Add(float64(len))
 	promCacheEvict.WithLabelValues(m.cache).Add(1)

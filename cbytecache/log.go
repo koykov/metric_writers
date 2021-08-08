@@ -26,11 +26,11 @@ func (m *LogMetrics) Release(size uint32) {
 	log.Printf("cbytecache %s: release cache size to %d bytes\n", m.cache, size)
 }
 
-func (m *LogMetrics) Set(len uint16) {
+func (m *LogMetrics) Set(len uint32) {
 	log.Printf("cbytecache %s: set new entry with len %d\n", m.cache, len)
 }
 
-func (m *LogMetrics) Evict(len uint16) {
+func (m *LogMetrics) Evict(len uint32) {
 	log.Printf("cbytecache %s: evict entry with len %d\n", m.cache, len)
 }
 
