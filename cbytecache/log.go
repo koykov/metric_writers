@@ -50,6 +50,10 @@ func (m *LogMetrics) Corrupt() {
 	log.Printf("cbytecache %s: hit corrupted entry\n", m.cache)
 }
 
+func (m *LogMetrics) Collision() {
+	log.Printf("cbytecache %s: keys collision\n", m.cache)
+}
+
 func (m *LogMetrics) NoSpace() {
 	log.Printf("cbytecache %s: no space available to set new entry\n", m.cache)
 }

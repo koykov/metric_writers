@@ -12,7 +12,7 @@ type PrometheusMetrics struct {
 var (
 	promCacheSize, promCacheUsed, promCacheFree *prometheus.GaugeVec
 
-	promCacheSet, promCacheEvict, promCacheHit, promCacheMiss,
+	promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss,
 	promCacheExpired, promCacheCorrupted, promCacheNoSpace *prometheus.CounterVec
 )
 
@@ -62,6 +62,10 @@ func (m *PrometheusMetrics) Expire() {
 
 func (m *PrometheusMetrics) Corrupt() {
 	promCacheCorrupted.WithLabelValues(m.cache).Add(1)
+}
+
+func (m *PrometheusMetrics) Collision() {
+	promCacheCollision.WithLabelValues(m.cache).Add(1)
 }
 
 func (m *PrometheusMetrics) NoSpace() {

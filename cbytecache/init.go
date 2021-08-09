@@ -51,5 +51,6 @@ func init() {
 	}, []string{"cache"})
 
 	prometheus.MustRegister(promCacheSize, promCacheUsed, promCacheFree,
-		promCacheSet, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired, promCacheCorrupted, promCacheNoSpace)
+		promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired,
+		promCacheCorrupted, promCacheNoSpace)
 }
