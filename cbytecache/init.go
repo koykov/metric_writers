@@ -12,11 +12,11 @@ func init() {
 		Name: "cbytecache_size_total",
 		Help: "Total cache size in bytes.",
 	}, []string{"cache"})
-	promCacheSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	promCacheUsed = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "cbytecache_size_used",
 		Help: "Used cache size in bytes.",
 	}, []string{"cache"})
-	promCacheSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	promCacheFree = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "cbytecache_size_free",
 		Help: "Free cache size in bytes.",
 	}, []string{"cache"})
@@ -24,6 +24,10 @@ func init() {
 	promCacheSet = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_set",
 		Help: "Count cache set calls.",
+	}, []string{"cache"})
+	promCacheCollision = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "cbytecache_collision",
+		Help: "Count keys collisions.",
 	}, []string{"cache"})
 	promCacheEvict = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_evict",
