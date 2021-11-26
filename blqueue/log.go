@@ -11,6 +11,8 @@ import (
 // Don't use in production. Only for debug purposes.
 type LogMetrics struct{}
 
+var _ = NewLogMetrics
+
 func NewLogMetrics() *LogMetrics {
 	m := &LogMetrics{}
 	return m
@@ -50,4 +52,8 @@ func (m *LogMetrics) QueuePull(queue string) {
 
 func (m *LogMetrics) QueueLeak(queue string) {
 	log.Printf("queue %s: queue leak\n", queue)
+}
+
+func (m *LogMetrics) QueueLost(queue string) {
+	log.Printf("queue %s: queue lost\n", queue)
 }
