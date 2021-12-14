@@ -2,58 +2,60 @@ package cbytecache
 
 import "log"
 
-// Metrics writer to log.
+// LogMetrics is Log implementation of cbytecache.MetricsWriter.
 //
 // Don't use in production. Only for debug purposes.
-type LogMetrics struct {
-	cache string
-}
+type LogMetrics struct{}
 
-func NewLogMetrics(cache string) *LogMetrics {
-	m := &LogMetrics{cache: cache}
+var (
+	_ = NewLogMetrics
+)
+
+func NewLogMetrics() *LogMetrics {
+	m := &LogMetrics{}
 	return m
 }
 
-func (m *LogMetrics) Alloc(size uint32) {
-	log.Printf("cbytecache %s: grow size with %d bytes\n", m.cache, size)
+func (m *LogMetrics) Alloc(key string, size uint32) {
+	log.Printf("cbytecache %s: grow size with %d bytes\n", key, size)
 }
 
-func (m *LogMetrics) Free(size uint32) {
-	log.Printf("cbytecache %s: reduce size with %d bytes\n", m.cache, size)
+func (m *LogMetrics) Free(key string, size uint32) {
+	log.Printf("cbytecache %s: reduce size with %d bytes\n", key, size)
 }
 
-func (m *LogMetrics) Release(size uint32) {
-	log.Printf("cbytecache %s: release cache size to %d bytes\n", m.cache, size)
+func (m *LogMetrics) Release(key string, size uint32) {
+	log.Printf("cbytecache %s: release cache size to %d bytes\n", key, size)
 }
 
-func (m *LogMetrics) Set(len uint32) {
-	log.Printf("cbytecache %s: set new entry with len %d\n", m.cache, len)
+func (m *LogMetrics) Set(key string, len uint32) {
+	log.Printf("cbytecache %s: set new entry with len %d\n", key, len)
 }
 
-func (m *LogMetrics) Evict(len uint32) {
-	log.Printf("cbytecache %s: evict entry with len %d\n", m.cache, len)
+func (m *LogMetrics) Evict(key string, len uint32) {
+	log.Printf("cbytecache %s: evict entry with len %d\n", key, len)
 }
 
-func (m *LogMetrics) Miss() {
-	log.Printf("cbytecache %s: cache miss\n", m.cache)
+func (m *LogMetrics) Miss(key string) {
+	log.Printf("cbytecache %s: cache miss\n", key)
 }
 
-func (m *LogMetrics) Hit() {
-	log.Printf("cbytecache %s: cache hit\n", m.cache)
+func (m *LogMetrics) Hit(key string) {
+	log.Printf("cbytecache %s: cache hit\n", key)
 }
 
-func (m *LogMetrics) Expire() {
-	log.Printf("cbytecache %s: hit expired entry\n", m.cache)
+func (m *LogMetrics) Expire(key string) {
+	log.Printf("cbytecache %s: hit expired entry\n", key)
 }
 
-func (m *LogMetrics) Corrupt() {
-	log.Printf("cbytecache %s: hit corrupted entry\n", m.cache)
+func (m *LogMetrics) Corrupt(key string) {
+	log.Printf("cbytecache %s: hit corrupted entry\n", key)
 }
 
-func (m *LogMetrics) Collision() {
-	log.Printf("cbytecache %s: keys collision\n", m.cache)
+func (m *LogMetrics) Collision(key string) {
+	log.Printf("cbytecache %s: keys collision\n", key)
 }
 
-func (m *LogMetrics) NoSpace() {
-	log.Printf("cbytecache %s: no space available to set new entry\n", m.cache)
+func (m *LogMetrics) NoSpace(key string) {
+	log.Printf("cbytecache %s: no space available to set new entry\n", key)
 }
