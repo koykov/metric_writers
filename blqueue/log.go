@@ -50,6 +50,10 @@ func (m *LogMetrics) QueuePull(queue string) {
 	log.Printf("queue %s: item leave the queue\n", queue)
 }
 
+func (m *LogMetrics) QueueRetry(queue string) {
+	log.Printf("queue %s: retry item processing due to fail\n", queue)
+}
+
 func (m *LogMetrics) QueueLeak(queue string) {
 	log.Printf("queue %s: queue leak\n", queue)
 }

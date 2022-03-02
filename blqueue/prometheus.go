@@ -12,7 +12,7 @@ var (
 	promQueueSize,
 	promWorkerIdle, promWorkerActive, promWorkerSleep *prometheus.GaugeVec
 
-	promQueueIn, promQueueOut, promQueueLeak, promQueueLost *prometheus.CounterVec
+	promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost *prometheus.CounterVec
 
 	_ = NewPrometheusMetrics
 )
@@ -44,6 +44,10 @@ func init() {
 		Name: "blqueue_out",
 		Help: "How many items leaves queue.",
 	}, []string{"queue"})
+	promQueueRetry = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "blqueue_retry",
+		Help: "How many retries occurs.",
+	}, []string{"queue"})
 	promQueueLeak = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "blqueue_leak",
 		Help: "How many items dropped on the floor due to queue is full.",
@@ -54,7 +58,7 @@ func init() {
 	}, []string{"queue"})
 
 	prometheus.MustRegister(promWorkerIdle, promWorkerActive, promWorkerSleep, promQueueSize,
-		promQueueIn, promQueueOut, promQueueLeak, promQueueLost)
+		promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost)
 }
 
 func NewPrometheusMetrics() *PrometheusMetrics {
@@ -109,6 +113,10 @@ func (m *PrometheusMetrics) QueuePut(queue string) {
 func (m *PrometheusMetrics) QueuePull(queue string) {
 	promQueueOut.WithLabelValues(queue).Inc()
 	promQueueSize.WithLabelValues(queue).Dec()
+}
+
+func (m *PrometheusMetrics) QueueRetry(queue string) {
+	promQueueRetry.WithLabelValues(queue).Inc()
 }
 
 func (m *PrometheusMetrics) QueueLeak(queue string) {
