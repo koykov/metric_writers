@@ -78,6 +78,9 @@ func NewPrometheusMetrics() *PrometheusMetrics {
 }
 
 func NewPrometheusMetricsWP(precision time.Duration) *PrometheusMetrics {
+	if precision == 0 {
+		precision = time.Nanosecond
+	}
 	m := &PrometheusMetrics{
 		prec: precision,
 	}
