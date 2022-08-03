@@ -2,6 +2,7 @@ package blqueue
 
 import (
 	"log"
+	"time"
 
 	"github.com/koykov/blqueue"
 )
@@ -32,6 +33,10 @@ func (m *LogMetrics) WorkerSleep(queue string, idx uint32) {
 
 func (m *LogMetrics) WorkerWakeup(queue string, idx uint32) {
 	log.Printf("queue %s: worker %d caught wakeup signal\n", queue, idx)
+}
+
+func (m *LogMetrics) WorkerWait(queue string, idx uint32, delay time.Duration) {
+	log.Printf("queue %s: worker %d waits %s\n", queue, idx, delay)
 }
 
 func (m *LogMetrics) WorkerStop(queue string, idx uint32, force bool, status blqueue.WorkerStatus) {

@@ -3,7 +3,7 @@ module github.com/koykov/metrics_writers
 go 1.18
 
 require (
-	github.com/koykov/blqueue v0.0.0-20220803213702-8a8c6c1d4ef6
+	github.com/koykov/blqueue v0.0.0-20220803214104-160e91efb223
 	github.com/prometheus/client_golang v1.12.2
 )
 

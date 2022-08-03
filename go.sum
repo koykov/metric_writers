@@ -142,6 +142,8 @@ github.com/koykov/blqueue v0.0.0-20220803212355-25ea84fb9130 h1:tUrVSttAj9CYAwJQ
 github.com/koykov/blqueue v0.0.0-20220803212355-25ea84fb9130/go.mod h1:YpXTFETW7GtL2xVslkFsHzTnZDqz3AvhIw9cRY6PQCc=
 github.com/koykov/blqueue v0.0.0-20220803213702-8a8c6c1d4ef6 h1:HbH1Dq596Mv36yPtLgOXVXvApzhh/XfrBsDa9v4TevY=
 github.com/koykov/blqueue v0.0.0-20220803213702-8a8c6c1d4ef6/go.mod h1:YpXTFETW7GtL2xVslkFsHzTnZDqz3AvhIw9cRY6PQCc=
+github.com/koykov/blqueue v0.0.0-20220803214104-160e91efb223 h1:JlrA+I47d8/Uy8tEgfrsTQv0jUMJ7E3pV48YyMnygXo=
+github.com/koykov/blqueue v0.0.0-20220803214104-160e91efb223/go.mod h1:YpXTFETW7GtL2xVslkFsHzTnZDqz3AvhIw9cRY6PQCc=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=

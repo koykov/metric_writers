@@ -109,7 +109,7 @@ func (m *PrometheusMetrics) WorkerWakeup(queue string, _ uint32) {
 	promWorkerSleep.WithLabelValues(queue).Add(-1)
 }
 
-func (m *PrometheusMetrics) WorkerWait(queue string, delay time.Duration) {
+func (m *PrometheusMetrics) WorkerWait(queue string, _ uint32, delay time.Duration) {
 	promWorkerWait.WithLabelValues(queue).Observe(float64(delay.Nanoseconds() / int64(m.prec)))
 }
 
