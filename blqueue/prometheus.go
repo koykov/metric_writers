@@ -1,18 +1,22 @@
 package blqueue
 
 import (
+	"time"
+
 	"github.com/koykov/blqueue"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 // PrometheusMetrics is a Prometheus implementation of blqueue.MetricsWriter.
-type PrometheusMetrics struct{}
+type PrometheusMetrics struct {
+	prec time.Duration
+}
 
 var (
-	promQueueSize,
-	promWorkerIdle, promWorkerActive, promWorkerSleep *prometheus.GaugeVec
-
+	promQueueSize, promWorkerIdle, promWorkerActive, promWorkerSleep        *prometheus.GaugeVec
 	promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost *prometheus.CounterVec
+
+	promWorkerWait *prometheus.HistogramVec
 
 	_ = NewPrometheusMetrics
 )
@@ -57,12 +61,26 @@ func init() {
 		Help: "How many items throw to the trash due to force close.",
 	}, []string{"queue"})
 
+	buckets := append(prometheus.DefBuckets, []float64{15, 20, 30, 40, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 3000, 5000}...)
+	promWorkerWait = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "blqueue_wait",
+		Help:    "How many worker waits due to delayed execution.",
+		Buckets: buckets,
+	}, []string{"queue"})
+
 	prometheus.MustRegister(promWorkerIdle, promWorkerActive, promWorkerSleep, promQueueSize,
-		promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost)
+		promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost,
+		promWorkerWait)
 }
 
 func NewPrometheusMetrics() *PrometheusMetrics {
-	m := &PrometheusMetrics{}
+	return NewPrometheusMetricsWP(time.Nanosecond)
+}
+
+func NewPrometheusMetricsWP(precision time.Duration) *PrometheusMetrics {
+	m := &PrometheusMetrics{
+		prec: precision,
+	}
 	return m
 }
 
@@ -89,6 +107,10 @@ func (m *PrometheusMetrics) WorkerSleep(queue string, _ uint32) {
 func (m *PrometheusMetrics) WorkerWakeup(queue string, _ uint32) {
 	promWorkerActive.WithLabelValues(queue).Inc()
 	promWorkerSleep.WithLabelValues(queue).Add(-1)
+}
+
+func (m *PrometheusMetrics) WorkerWait(queue string, delay time.Duration) {
+	promWorkerWait.WithLabelValues(queue).Observe(float64(delay.Nanoseconds() / int64(m.prec)))
 }
 
 func (m *PrometheusMetrics) WorkerStop(queue string, _ uint32, force bool, status blqueue.WorkerStatus) {
