@@ -87,7 +87,7 @@ func NewPrometheusMetricsWP(precision time.Duration) *PrometheusMetrics {
 	return m
 }
 
-func (m *PrometheusMetrics) WorkerSetup(queue string, active, sleep, stop uint) {
+func (m PrometheusMetrics) WorkerSetup(queue string, active, sleep, stop uint) {
 	promWorkerActive.DeleteLabelValues(queue)
 	promWorkerSleep.DeleteLabelValues(queue)
 	promWorkerIdle.DeleteLabelValues(queue)
@@ -97,26 +97,26 @@ func (m *PrometheusMetrics) WorkerSetup(queue string, active, sleep, stop uint) 
 	promWorkerIdle.WithLabelValues(queue).Add(float64(stop))
 }
 
-func (m *PrometheusMetrics) WorkerInit(queue string, _ uint32) {
+func (m PrometheusMetrics) WorkerInit(queue string, _ uint32) {
 	promWorkerActive.WithLabelValues(queue).Inc()
 	promWorkerIdle.WithLabelValues(queue).Add(-1)
 }
 
-func (m *PrometheusMetrics) WorkerSleep(queue string, _ uint32) {
+func (m PrometheusMetrics) WorkerSleep(queue string, _ uint32) {
 	promWorkerSleep.WithLabelValues(queue).Inc()
 	promWorkerActive.WithLabelValues(queue).Add(-1)
 }
 
-func (m *PrometheusMetrics) WorkerWakeup(queue string, _ uint32) {
+func (m PrometheusMetrics) WorkerWakeup(queue string, _ uint32) {
 	promWorkerActive.WithLabelValues(queue).Inc()
 	promWorkerSleep.WithLabelValues(queue).Add(-1)
 }
 
-func (m *PrometheusMetrics) WorkerWait(queue string, _ uint32, delay time.Duration) {
+func (m PrometheusMetrics) WorkerWait(queue string, _ uint32, delay time.Duration) {
 	promWorkerWait.WithLabelValues(queue).Observe(float64(delay.Nanoseconds() / int64(m.prec)))
 }
 
-func (m *PrometheusMetrics) WorkerStop(queue string, _ uint32, force bool, status blqueue.WorkerStatus) {
+func (m PrometheusMetrics) WorkerStop(queue string, _ uint32, force bool, status blqueue.WorkerStatus) {
 	promWorkerIdle.WithLabelValues(queue).Inc()
 	if force {
 		switch status {
@@ -130,26 +130,26 @@ func (m *PrometheusMetrics) WorkerStop(queue string, _ uint32, force bool, statu
 	}
 }
 
-func (m *PrometheusMetrics) QueuePut(queue string) {
+func (m PrometheusMetrics) QueuePut(queue string) {
 	promQueueIn.WithLabelValues(queue).Inc()
 	promQueueSize.WithLabelValues(queue).Inc()
 }
 
-func (m *PrometheusMetrics) QueuePull(queue string) {
+func (m PrometheusMetrics) QueuePull(queue string) {
 	promQueueOut.WithLabelValues(queue).Inc()
 	promQueueSize.WithLabelValues(queue).Dec()
 }
 
-func (m *PrometheusMetrics) QueueRetry(queue string) {
+func (m PrometheusMetrics) QueueRetry(queue string) {
 	promQueueRetry.WithLabelValues(queue).Inc()
 }
 
-func (m *PrometheusMetrics) QueueLeak(queue string) {
+func (m PrometheusMetrics) QueueLeak(queue string) {
 	promQueueLeak.WithLabelValues(queue).Inc()
 	promQueueSize.WithLabelValues(queue).Dec()
 }
 
-func (m *PrometheusMetrics) QueueLost(queue string) {
+func (m PrometheusMetrics) QueueLost(queue string) {
 	promQueueLost.WithLabelValues(queue).Inc()
 	promQueueSize.WithLabelValues(queue).Dec()
 }
