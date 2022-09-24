@@ -87,53 +87,53 @@ func NewPrometheusMetrics() *PrometheusMetrics {
 	return m
 }
 
-func (m *PrometheusMetrics) Alloc(key string, size uint32) {
+func (m PrometheusMetrics) Alloc(key string, size uint32) {
 	promCacheSize.WithLabelValues(key).Add(float64(size))
 	promCacheFree.WithLabelValues(key).Add(float64(size))
 }
 
-func (m *PrometheusMetrics) Free(key string, len uint32) {
+func (m PrometheusMetrics) Free(key string, len uint32) {
 	promCacheUsed.WithLabelValues(key).Add(-float64(len))
 	promCacheFree.WithLabelValues(key).Add(float64(len))
 }
 
-func (m *PrometheusMetrics) Release(key string, len uint32) {
+func (m PrometheusMetrics) Release(key string, len uint32) {
 	promCacheSize.WithLabelValues(key).Add(-float64(len))
 	promCacheFree.WithLabelValues(key).Add(-float64(len))
 }
 
-func (m *PrometheusMetrics) Set(key string, len uint32) {
+func (m PrometheusMetrics) Set(key string, len uint32) {
 	promCacheUsed.WithLabelValues(key).Add(float64(len))
 	promCacheFree.WithLabelValues(key).Add(-float64(len))
 	promCacheSet.WithLabelValues(key).Add(1)
 }
 
-func (m *PrometheusMetrics) Evict(key string, len uint32) {
+func (m PrometheusMetrics) Evict(key string, len uint32) {
 	promCacheUsed.WithLabelValues(key).Add(-float64(len))
 	promCacheFree.WithLabelValues(key).Add(float64(len))
 	promCacheEvict.WithLabelValues(key).Add(1)
 }
 
-func (m *PrometheusMetrics) Miss(key string) {
+func (m PrometheusMetrics) Miss(key string) {
 	promCacheMiss.WithLabelValues(key).Add(1)
 }
 
-func (m *PrometheusMetrics) Hit(key string) {
+func (m PrometheusMetrics) Hit(key string) {
 	promCacheHit.WithLabelValues(key).Add(1)
 }
 
-func (m *PrometheusMetrics) Expire(key string) {
+func (m PrometheusMetrics) Expire(key string) {
 	promCacheExpired.WithLabelValues(key).Add(1)
 }
 
-func (m *PrometheusMetrics) Corrupt(key string) {
+func (m PrometheusMetrics) Corrupt(key string) {
 	promCacheCorrupted.WithLabelValues(key).Add(1)
 }
 
-func (m *PrometheusMetrics) Collision(key string) {
+func (m PrometheusMetrics) Collision(key string) {
 	promCacheCollision.WithLabelValues(key).Add(1)
 }
 
-func (m *PrometheusMetrics) NoSpace(key string) {
+func (m PrometheusMetrics) NoSpace(key string) {
 	promCacheNoSpace.WithLabelValues(key).Add(1)
 }
