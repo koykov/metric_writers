@@ -12,28 +12,35 @@ type PrometheusMetrics struct {
 }
 
 var (
-	promQueueSize                             *prometheus.GaugeVec
-	promQueueBytesIncome, promQueueBytesFlush *prometheus.CounterVec
+	promSizeIncome, promSizeOutcome, promBytesIncome, promBytesOutcome, promBytesFlush *prometheus.CounterVec
 
 	_ = NewPrometheusMetrics
 )
 
 func init() {
-	promQueueSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "dlqdump_size",
+	promSizeIncome = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "dlqdump_size_in",
+		Help: "Actual queue size.",
+	}, []string{"queue"})
+	promSizeOutcome = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "dlqdump_size_out",
 		Help: "Actual queue size.",
 	}, []string{"queue"})
 
-	promQueueBytesIncome = prometheus.NewCounterVec(prometheus.CounterOpts{
+	promBytesIncome = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "dlqdump_bytes_in",
 		Help: "How many bytes comes to the queue.",
 	}, []string{"queue"})
-	promQueueBytesFlush = prometheus.NewCounterVec(prometheus.CounterOpts{
+	promBytesOutcome = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "dlqdump_bytes_out",
+		Help: "How many bytes comes to the queue.",
+	}, []string{"queue"})
+	promBytesFlush = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "dlqdump_bytes_flush",
 		Help: "How many bytes flushes from the queue.",
 	}, []string{"queue", "reason"})
 
-	prometheus.MustRegister(promQueueSize, promQueueBytesIncome, promQueueBytesFlush)
+	prometheus.MustRegister(promSizeIncome, promSizeOutcome, promBytesIncome, promBytesOutcome, promBytesFlush)
 }
 
 func NewPrometheusMetrics() *PrometheusMetrics {
@@ -50,13 +57,16 @@ func NewPrometheusMetricsWP(precision time.Duration) *PrometheusMetrics {
 	return m
 }
 
-func (m PrometheusMetrics) QueuePut(queue string, size int) {
-	promQueueBytesIncome.WithLabelValues(queue).Add(float64(size))
-	promQueueSize.WithLabelValues(queue).Inc()
+func (m PrometheusMetrics) DumpPut(queue string, size int) {
+	promBytesIncome.WithLabelValues(queue).Add(float64(size))
+	promSizeIncome.WithLabelValues(queue).Inc()
 }
 
-func (m PrometheusMetrics) QueueFlush(queue, reason string, size int) {
-	promQueueBytesIncome.WithLabelValues(queue).Add(float64(size))
-	promQueueBytesFlush.WithLabelValues(queue, reason).Add(float64(size))
-	promQueueSize.WithLabelValues(queue).Set(0)
+func (m PrometheusMetrics) DumpFlush(queue, reason string, size int) {
+	promBytesFlush.WithLabelValues(queue, reason).Add(float64(size))
+}
+
+func (m PrometheusMetrics) DumpRestore(queue string, size int) {
+	promBytesOutcome.WithLabelValues(queue).Add(float64(size))
+	promSizeOutcome.WithLabelValues(queue).Inc()
 }

@@ -16,10 +16,14 @@ func NewLogMetrics() *LogMetrics {
 	return m
 }
 
-func (m LogMetrics) QueuePut(queue string, size int) {
+func (m LogMetrics) DumpPut(queue string, size int) {
 	log.Printf("queue %s: %d bytes come to the queue\n", queue, size)
 }
 
-func (m LogMetrics) QueueFlush(queue, reason string, size int) {
+func (m LogMetrics) DumpFlush(queue, reason string, size int) {
 	log.Printf("queue %s: flush %d bytes due to reason %s\n", queue, size, reason)
+}
+
+func (m LogMetrics) DumpRestore(queue string, size int) {
+	log.Printf("queue %s: %d bytes restored from dump\n", queue, size)
 }
