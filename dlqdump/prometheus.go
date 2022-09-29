@@ -57,16 +57,16 @@ func NewPrometheusMetricsWP(precision time.Duration) *PrometheusMetrics {
 	return m
 }
 
-func (m PrometheusMetrics) DumpPut(queue string, size int) {
+func (m PrometheusMetrics) Dump(queue string, size int) {
 	promBytesIncome.WithLabelValues(queue).Add(float64(size))
 	promSizeIncome.WithLabelValues(queue).Inc()
 }
 
-func (m PrometheusMetrics) DumpFlush(queue, reason string, size int) {
+func (m PrometheusMetrics) Flush(queue, reason string, size int) {
 	promBytesFlush.WithLabelValues(queue, reason).Add(float64(size))
 }
 
-func (m PrometheusMetrics) DumpRestore(queue string, size int) {
+func (m PrometheusMetrics) Restore(queue string, size int) {
 	promBytesOutcome.WithLabelValues(queue).Add(float64(size))
 	promSizeOutcome.WithLabelValues(queue).Inc()
 }
