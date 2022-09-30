@@ -27,3 +27,7 @@ func (m LogMetrics) Flush(queue, reason string, size int) {
 func (m LogMetrics) Restore(queue string, size int) {
 	log.Printf("queue %s: %d bytes restored from dump\n", queue, size)
 }
+
+func (m LogMetrics) Fail(queue, reason string) {
+	log.Printf("queue %s: restore failed with reason '%s'\n", queue, reason)
+}

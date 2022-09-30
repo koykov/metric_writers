@@ -12,7 +12,8 @@ type PrometheusMetrics struct {
 }
 
 var (
-	promSizeIncome, promSizeOutcome, promBytesIncome, promBytesOutcome, promBytesFlush *prometheus.CounterVec
+	promSizeIncome, promSizeOutcome, promBytesIncome, promBytesOutcome, promBytesFlush,
+	promFail *prometheus.CounterVec
 
 	_ = NewPrometheusMetrics
 )
@@ -39,8 +40,12 @@ func init() {
 		Name: "dlqdump_bytes_flush",
 		Help: "How many bytes flushes from the queue.",
 	}, []string{"queue", "reason"})
+	promFail = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "dlqdump_fail",
+		Help: "Error counters with various reasons.",
+	}, []string{"queue", "reason"})
 
-	prometheus.MustRegister(promSizeIncome, promSizeOutcome, promBytesIncome, promBytesOutcome, promBytesFlush)
+	prometheus.MustRegister(promSizeIncome, promSizeOutcome, promBytesIncome, promBytesOutcome, promBytesFlush, promFail)
 }
 
 func NewPrometheusMetrics() *PrometheusMetrics {
@@ -69,4 +74,8 @@ func (m PrometheusMetrics) Flush(queue, reason string, size int) {
 func (m PrometheusMetrics) Restore(queue string, size int) {
 	promBytesOutcome.WithLabelValues(queue).Add(float64(size))
 	promSizeOutcome.WithLabelValues(queue).Inc()
+}
+
+func (m PrometheusMetrics) Fail(queue, reason string) {
+	promFail.WithLabelValues(queue, reason).Inc()
 }
