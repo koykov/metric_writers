@@ -141,8 +141,8 @@ github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxv
 github.com/konsorten/go-windows-terminal-sequences v1.0.3/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/koykov/bitset v0.0.0-20220630192021-a713ee0d389d h1:b82iiOxU5g1mcgKfmJPg47WGLumM91t9wPNWN1a3DbM=
 github.com/koykov/bitset v0.0.0-20220630192021-a713ee0d389d/go.mod h1:Mg0YlEO6vG0Vd2N5qZhyH1ss2ZuuMZR8iYNKshQcm6I=
-github.com/koykov/blqueue v0.0.0-20220821193301-556d834a23ac h1:KXjJ0OG5l3PuueVJIfTQIY4qTdADG3sgenv9zIE9IyY=
-github.com/koykov/blqueue v0.0.0-20220821193301-556d834a23ac/go.mod h1:YpXTFETW7GtL2xVslkFsHzTnZDqz3AvhIw9cRY6PQCc=
+github.com/koykov/queue v0.0.0-20221011151618-6b79ff2295a5 h1:dQL82rIGtPotUCz190E0rlRuPK0eXVnPv/+PGafgDFo=
+github.com/koykov/queue v0.0.0-20221011151618-6b79ff2295a5/go.mod h1:LWBli+ArnYiOtPv3OV6husgjTuG7hlFXWuTmj2g9ffo=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=

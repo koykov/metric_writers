@@ -1,13 +1,13 @@
-package blqueue
+package queue
 
 import (
 	"log"
 	"time"
 
-	"github.com/koykov/blqueue"
+	q "github.com/koykov/queue"
 )
 
-// LogMetrics is Log implementation of blqueue.MetricsWriter.
+// LogMetrics is Log implementation of queue.MetricsWriter.
 //
 // Don't use in production. Only for debug purposes.
 type LogMetrics struct{}
@@ -39,7 +39,7 @@ func (m LogMetrics) WorkerWait(queue string, idx uint32, delay time.Duration) {
 	log.Printf("queue %s: worker %d waits %s\n", queue, idx, delay)
 }
 
-func (m LogMetrics) WorkerStop(queue string, idx uint32, force bool, status blqueue.WorkerStatus) {
+func (m LogMetrics) WorkerStop(queue string, idx uint32, force bool, status q.WorkerStatus) {
 	if force {
 		log.Printf("queue %s: worker %d caught force stop signal (current status %d)\n", queue, idx, status)
 	} else {

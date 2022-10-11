@@ -1,13 +1,13 @@
-package blqueue
+package queue
 
 import (
 	"time"
 
-	"github.com/koykov/blqueue"
+	q "github.com/koykov/queue"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// PrometheusMetrics is a Prometheus implementation of blqueue.MetricsWriter.
+// PrometheusMetrics is a Prometheus implementation of queue.MetricsWriter.
 type PrometheusMetrics struct {
 	prec time.Duration
 }
@@ -23,47 +23,47 @@ var (
 
 func init() {
 	promWorkerIdle = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "blqueue_workers_idle",
+		Name: "queue_workers_idle",
 		Help: "Indicates how many workers idle.",
 	}, []string{"queue"})
 	promWorkerActive = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "blqueue_workers_active",
+		Name: "queue_workers_active",
 		Help: "Indicates how many workers active.",
 	}, []string{"queue"})
 	promWorkerSleep = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "blqueue_workers_sleep",
+		Name: "queue_workers_sleep",
 		Help: "Indicates how many workers sleep.",
 	}, []string{"queue"})
 
 	promQueueSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "blqueue_size",
+		Name: "queue_size",
 		Help: "Actual queue size.",
 	}, []string{"queue"})
 
 	promQueueIn = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "blqueue_in",
+		Name: "queue_in",
 		Help: "How many items comes to the queue.",
 	}, []string{"queue"})
 	promQueueOut = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "blqueue_out",
+		Name: "queue_out",
 		Help: "How many items leaves queue.",
 	}, []string{"queue"})
 	promQueueRetry = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "blqueue_retry",
+		Name: "queue_retry",
 		Help: "How many retries occurs.",
 	}, []string{"queue"})
 	promQueueLeak = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "blqueue_leak",
+		Name: "queue_leak",
 		Help: "How many items dropped on the floor due to queue is full.",
 	}, []string{"queue"})
 	promQueueLost = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "blqueue_lost",
+		Name: "queue_lost",
 		Help: "How many items throw to the trash due to force close.",
 	}, []string{"queue"})
 
 	buckets := append(prometheus.DefBuckets, []float64{15, 20, 30, 40, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 3000, 5000}...)
 	promWorkerWait = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "blqueue_wait",
+		Name:    "queue_wait",
 		Help:    "How many worker waits due to delayed execution.",
 		Buckets: buckets,
 	}, []string{"queue"})
@@ -116,13 +116,13 @@ func (m PrometheusMetrics) WorkerWait(queue string, _ uint32, delay time.Duratio
 	promWorkerWait.WithLabelValues(queue).Observe(float64(delay.Nanoseconds() / int64(m.prec)))
 }
 
-func (m PrometheusMetrics) WorkerStop(queue string, _ uint32, force bool, status blqueue.WorkerStatus) {
+func (m PrometheusMetrics) WorkerStop(queue string, _ uint32, force bool, status q.WorkerStatus) {
 	promWorkerIdle.WithLabelValues(queue).Inc()
 	if force {
 		switch status {
-		case blqueue.WorkerStatusActive:
+		case q.WorkerStatusActive:
 			promWorkerActive.WithLabelValues(queue).Add(-1)
-		case blqueue.WorkerStatusSleep:
+		case q.WorkerStatusSleep:
 			promWorkerSleep.WithLabelValues(queue).Add(-1)
 		}
 	} else {
