@@ -10,59 +10,61 @@ import (
 // LogMetrics is Log implementation of queue.MetricsWriter.
 //
 // Don't use in production. Only for debug purposes.
-type LogMetrics struct{}
+type LogMetrics struct {
+	name string
+}
 
 var _ = NewLogMetrics
 
-func NewLogMetrics() *LogMetrics {
-	m := &LogMetrics{}
+func NewLogMetrics(name string) *LogMetrics {
+	m := &LogMetrics{name}
 	return m
 }
 
-func (m LogMetrics) WorkerSetup(queue string, active, sleep, stop uint) {
-	log.Printf("queue #%s: setup workers %d active, %d sleep and %d stop", queue, active, sleep, stop)
+func (m LogMetrics) WorkerSetup(active, sleep, stop uint) {
+	log.Printf("queue #%s: setup workers %d active, %d sleep and %d stop", m.name, active, sleep, stop)
 }
 
-func (m LogMetrics) WorkerInit(queue string, idx uint32) {
-	log.Printf("queue %s: worker %d caught init signal\n", queue, idx)
+func (m LogMetrics) WorkerInit(idx uint32) {
+	log.Printf("queue %s: worker %d caught init signal\n", m.name, idx)
 }
 
-func (m LogMetrics) WorkerSleep(queue string, idx uint32) {
-	log.Printf("queue %s: worker %d caught sleep signal\n", queue, idx)
+func (m LogMetrics) WorkerSleep(idx uint32) {
+	log.Printf("queue %s: worker %d caught sleep signal\n", m.name, idx)
 }
 
-func (m LogMetrics) WorkerWakeup(queue string, idx uint32) {
-	log.Printf("queue %s: worker %d caught wakeup signal\n", queue, idx)
+func (m LogMetrics) WorkerWakeup(idx uint32) {
+	log.Printf("queue %s: worker %d caught wakeup signal\n", m.name, idx)
 }
 
-func (m LogMetrics) WorkerWait(queue string, idx uint32, delay time.Duration) {
-	log.Printf("queue %s: worker %d waits %s\n", queue, idx, delay)
+func (m LogMetrics) WorkerWait(idx uint32, delay time.Duration) {
+	log.Printf("queue %s: worker %d waits %s\n", m.name, idx, delay)
 }
 
-func (m LogMetrics) WorkerStop(queue string, idx uint32, force bool, status q.WorkerStatus) {
+func (m LogMetrics) WorkerStop(idx uint32, force bool, status q.WorkerStatus) {
 	if force {
-		log.Printf("queue %s: worker %d caught force stop signal (current status %d)\n", queue, idx, status)
+		log.Printf("queue %s: worker %d caught force stop signal (current status %d)\n", m.name, idx, status)
 	} else {
-		log.Printf("queue %s: worker %d caught stop signal\n", queue, idx)
+		log.Printf("queue %s: worker %d caught stop signal\n", m.name, idx)
 	}
 }
 
-func (m LogMetrics) QueuePut(queue string) {
-	log.Printf("queue %s: new item come to the queue\n", queue)
+func (m LogMetrics) QueuePut() {
+	log.Printf("queue %s: new item come to the queue\n", m.name)
 }
 
-func (m LogMetrics) QueuePull(queue string) {
-	log.Printf("queue %s: item leave the queue\n", queue)
+func (m LogMetrics) QueuePull() {
+	log.Printf("queue %s: item leave the queue\n", m.name)
 }
 
-func (m LogMetrics) QueueRetry(queue string) {
-	log.Printf("queue %s: retry item processing due to fail\n", queue)
+func (m LogMetrics) QueueRetry() {
+	log.Printf("queue %s: retry item processing due to fail\n", m.name)
 }
 
-func (m LogMetrics) QueueLeak(queue string) {
-	log.Printf("queue %s: queue leak\n", queue)
+func (m LogMetrics) QueueLeak() {
+	log.Printf("queue %s: queue leak\n", m.name)
 }
 
-func (m LogMetrics) QueueLost(queue string) {
-	log.Printf("queue %s: queue lost\n", queue)
+func (m LogMetrics) QueueLost() {
+	log.Printf("queue %s: queue lost\n", m.name)
 }

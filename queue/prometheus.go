@@ -9,6 +9,7 @@ import (
 
 // PrometheusMetrics is a Prometheus implementation of queue.MetricsWriter.
 type PrometheusMetrics struct {
+	name string
 	prec time.Duration
 }
 
@@ -73,83 +74,84 @@ func init() {
 		promWorkerWait)
 }
 
-func NewPrometheusMetrics() *PrometheusMetrics {
-	return NewPrometheusMetricsWP(time.Nanosecond)
+func NewPrometheusMetrics(name string) *PrometheusMetrics {
+	return NewPrometheusMetricsWP(name, time.Nanosecond)
 }
 
-func NewPrometheusMetricsWP(precision time.Duration) *PrometheusMetrics {
+func NewPrometheusMetricsWP(name string, precision time.Duration) *PrometheusMetrics {
 	if precision == 0 {
 		precision = time.Nanosecond
 	}
 	m := &PrometheusMetrics{
+		name: name,
 		prec: precision,
 	}
 	return m
 }
 
-func (m PrometheusMetrics) WorkerSetup(queue string, active, sleep, stop uint) {
-	promWorkerActive.DeleteLabelValues(queue)
-	promWorkerSleep.DeleteLabelValues(queue)
-	promWorkerIdle.DeleteLabelValues(queue)
+func (m PrometheusMetrics) WorkerSetup(active, sleep, stop uint) {
+	promWorkerActive.DeleteLabelValues(m.name)
+	promWorkerSleep.DeleteLabelValues(m.name)
+	promWorkerIdle.DeleteLabelValues(m.name)
 
-	promWorkerActive.WithLabelValues(queue).Add(float64(active))
-	promWorkerSleep.WithLabelValues(queue).Add(float64(sleep))
-	promWorkerIdle.WithLabelValues(queue).Add(float64(stop))
+	promWorkerActive.WithLabelValues(m.name).Add(float64(active))
+	promWorkerSleep.WithLabelValues(m.name).Add(float64(sleep))
+	promWorkerIdle.WithLabelValues(m.name).Add(float64(stop))
 }
 
-func (m PrometheusMetrics) WorkerInit(queue string, _ uint32) {
-	promWorkerActive.WithLabelValues(queue).Inc()
-	promWorkerIdle.WithLabelValues(queue).Add(-1)
+func (m PrometheusMetrics) WorkerInit(_ uint32) {
+	promWorkerActive.WithLabelValues(m.name).Inc()
+	promWorkerIdle.WithLabelValues(m.name).Add(-1)
 }
 
-func (m PrometheusMetrics) WorkerSleep(queue string, _ uint32) {
-	promWorkerSleep.WithLabelValues(queue).Inc()
-	promWorkerActive.WithLabelValues(queue).Add(-1)
+func (m PrometheusMetrics) WorkerSleep(_ uint32) {
+	promWorkerSleep.WithLabelValues(m.name).Inc()
+	promWorkerActive.WithLabelValues(m.name).Add(-1)
 }
 
-func (m PrometheusMetrics) WorkerWakeup(queue string, _ uint32) {
-	promWorkerActive.WithLabelValues(queue).Inc()
-	promWorkerSleep.WithLabelValues(queue).Add(-1)
+func (m PrometheusMetrics) WorkerWakeup(_ uint32) {
+	promWorkerActive.WithLabelValues(m.name).Inc()
+	promWorkerSleep.WithLabelValues(m.name).Add(-1)
 }
 
-func (m PrometheusMetrics) WorkerWait(queue string, _ uint32, delay time.Duration) {
-	promWorkerWait.WithLabelValues(queue).Observe(float64(delay.Nanoseconds() / int64(m.prec)))
+func (m PrometheusMetrics) WorkerWait(_ uint32, delay time.Duration) {
+	promWorkerWait.WithLabelValues(m.name).Observe(float64(delay.Nanoseconds() / int64(m.prec)))
 }
 
-func (m PrometheusMetrics) WorkerStop(queue string, _ uint32, force bool, status q.WorkerStatus) {
-	promWorkerIdle.WithLabelValues(queue).Inc()
+func (m PrometheusMetrics) WorkerStop(_ uint32, force bool, status q.WorkerStatus) {
+	promWorkerIdle.WithLabelValues(m.name).Inc()
 	if force {
 		switch status {
 		case q.WorkerStatusActive:
-			promWorkerActive.WithLabelValues(queue).Add(-1)
+			promWorkerActive.WithLabelValues(m.name).Add(-1)
 		case q.WorkerStatusSleep:
-			promWorkerSleep.WithLabelValues(queue).Add(-1)
+			promWorkerSleep.WithLabelValues(m.name).Add(-1)
 		}
 	} else {
-		promWorkerSleep.WithLabelValues(queue).Add(-1)
+		promWorkerSleep.WithLabelValues(m.name).Add(-1)
 	}
 }
 
-func (m PrometheusMetrics) QueuePut(queue string) {
-	promQueueIn.WithLabelValues(queue).Inc()
-	promQueueSize.WithLabelValues(queue).Inc()
+func (m PrometheusMetrics) QueuePut() {
+	promQueueIn.WithLabelValues(m.name).Inc()
+	promQueueSize.WithLabelValues(m.name).Inc()
 }
 
-func (m PrometheusMetrics) QueuePull(queue string) {
-	promQueueOut.WithLabelValues(queue).Inc()
-	promQueueSize.WithLabelValues(queue).Dec()
+func (m PrometheusMetrics) QueuePull() {
+	promQueueOut.WithLabelValues(m.name).Inc()
+	promQueueSize.WithLabelValues(m.name).Dec()
 }
 
-func (m PrometheusMetrics) QueueRetry(queue string) {
-	promQueueRetry.WithLabelValues(queue).Inc()
+func (m PrometheusMetrics) QueueRetry() {
+	promQueueRetry.WithLabelValues(m.name).Inc()
 }
 
-func (m PrometheusMetrics) QueueLeak(queue string) {
-	promQueueLeak.WithLabelValues(queue).Inc()
-	promQueueSize.WithLabelValues(queue).Dec()
+func (m PrometheusMetrics) QueueLeak() {
+	promQueueLeak.WithLabelValues(m.name).Inc()
+	promQueueSize.WithLabelValues(m.name).Dec()
 }
 
-func (m PrometheusMetrics) QueueLost(queue string) {
-	promQueueLost.WithLabelValues(queue).Inc()
-	promQueueSize.WithLabelValues(queue).Dec()
+func (m PrometheusMetrics) QueueLost() {
+	promQueueLost.WithLabelValues(m.name).Inc()
+	promQueueSize.WithLabelValues(m.name).Dec()
 }
