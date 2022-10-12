@@ -8,6 +8,7 @@ import (
 
 // PrometheusMetrics is a Prometheus implementation of dlqdump.MetricsWriter.
 type PrometheusMetrics struct {
+	name string
 	prec time.Duration
 }
 
@@ -48,34 +49,35 @@ func init() {
 	prometheus.MustRegister(promSizeIncome, promSizeOutcome, promBytesIncome, promBytesOutcome, promBytesFlush, promFail)
 }
 
-func NewPrometheusMetrics() *PrometheusMetrics {
-	return NewPrometheusMetricsWP(time.Nanosecond)
+func NewPrometheusMetrics(name string) *PrometheusMetrics {
+	return NewPrometheusMetricsWP(name, time.Nanosecond)
 }
 
-func NewPrometheusMetricsWP(precision time.Duration) *PrometheusMetrics {
+func NewPrometheusMetricsWP(name string, precision time.Duration) *PrometheusMetrics {
 	if precision == 0 {
 		precision = time.Nanosecond
 	}
 	m := &PrometheusMetrics{
+		name: name,
 		prec: precision,
 	}
 	return m
 }
 
-func (m PrometheusMetrics) Dump(queue string, size int) {
-	promBytesIncome.WithLabelValues(queue).Add(float64(size))
-	promSizeIncome.WithLabelValues(queue).Inc()
+func (m PrometheusMetrics) Dump(size int) {
+	promBytesIncome.WithLabelValues(m.name).Add(float64(size))
+	promSizeIncome.WithLabelValues(m.name).Inc()
 }
 
-func (m PrometheusMetrics) Flush(queue, reason string, size int) {
-	promBytesFlush.WithLabelValues(queue, reason).Add(float64(size))
+func (m PrometheusMetrics) Flush(reason string, size int) {
+	promBytesFlush.WithLabelValues(m.name, reason).Add(float64(size))
 }
 
-func (m PrometheusMetrics) Restore(queue string, size int) {
-	promBytesOutcome.WithLabelValues(queue).Add(float64(size))
-	promSizeOutcome.WithLabelValues(queue).Inc()
+func (m PrometheusMetrics) Restore(size int) {
+	promBytesOutcome.WithLabelValues(m.name).Add(float64(size))
+	promSizeOutcome.WithLabelValues(m.name).Inc()
 }
 
-func (m PrometheusMetrics) Fail(queue, reason string) {
-	promFail.WithLabelValues(queue, reason).Inc()
+func (m PrometheusMetrics) Fail(reason string) {
+	promFail.WithLabelValues(m.name, reason).Inc()
 }
