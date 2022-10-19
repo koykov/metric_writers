@@ -5,7 +5,9 @@ import (
 )
 
 // PrometheusMetrics is a Prometheus implementation of cbytecache.MetricsWriter.
-type PrometheusMetrics struct{}
+type PrometheusMetrics struct {
+	key string
+}
 
 var (
 	promCacheSize, promCacheUsed, promCacheFree *prometheus.GaugeVec
@@ -82,58 +84,58 @@ func init() {
 		promCacheCorrupted, promCacheNoSpace, promCacheSetSpeed, promCacheGetSpeed)
 }
 
-func NewPrometheusMetrics() *PrometheusMetrics {
-	m := &PrometheusMetrics{}
+func NewPrometheusMetrics(key string) *PrometheusMetrics {
+	m := &PrometheusMetrics{key}
 	return m
 }
 
-func (m PrometheusMetrics) Alloc(key string, size uint32) {
-	promCacheSize.WithLabelValues(key).Add(float64(size))
-	promCacheFree.WithLabelValues(key).Add(float64(size))
+func (m PrometheusMetrics) Alloc(size uint32) {
+	promCacheSize.WithLabelValues(m.key).Add(float64(size))
+	promCacheFree.WithLabelValues(m.key).Add(float64(size))
 }
 
-func (m PrometheusMetrics) Free(key string, len uint32) {
-	promCacheUsed.WithLabelValues(key).Add(-float64(len))
-	promCacheFree.WithLabelValues(key).Add(float64(len))
+func (m PrometheusMetrics) Free(len uint32) {
+	promCacheUsed.WithLabelValues(m.key).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.key).Add(float64(len))
 }
 
-func (m PrometheusMetrics) Release(key string, len uint32) {
-	promCacheSize.WithLabelValues(key).Add(-float64(len))
-	promCacheFree.WithLabelValues(key).Add(-float64(len))
+func (m PrometheusMetrics) Release(len uint32) {
+	promCacheSize.WithLabelValues(m.key).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
 }
 
-func (m PrometheusMetrics) Set(key string, len uint32) {
-	promCacheUsed.WithLabelValues(key).Add(float64(len))
-	promCacheFree.WithLabelValues(key).Add(-float64(len))
-	promCacheSet.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) Set(len uint32) {
+	promCacheUsed.WithLabelValues(m.key).Add(float64(len))
+	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
+	promCacheSet.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Evict(key string, len uint32) {
-	promCacheUsed.WithLabelValues(key).Add(-float64(len))
-	promCacheFree.WithLabelValues(key).Add(float64(len))
-	promCacheEvict.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) Evict(len uint32) {
+	promCacheUsed.WithLabelValues(m.key).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.key).Add(float64(len))
+	promCacheEvict.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Miss(key string) {
-	promCacheMiss.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) Miss() {
+	promCacheMiss.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Hit(key string) {
-	promCacheHit.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) Hit() {
+	promCacheHit.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Expire(key string) {
-	promCacheExpired.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) Expire() {
+	promCacheExpired.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Corrupt(key string) {
-	promCacheCorrupted.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) Corrupt() {
+	promCacheCorrupted.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Collision(key string) {
-	promCacheCollision.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) Collision() {
+	promCacheCollision.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) NoSpace(key string) {
-	promCacheNoSpace.WithLabelValues(key).Add(1)
+func (m PrometheusMetrics) NoSpace() {
+	promCacheNoSpace.WithLabelValues(m.key).Add(1)
 }
