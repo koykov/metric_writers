@@ -110,9 +110,7 @@ func (m PrometheusMetrics) Set(len uint32) {
 	promCacheSet.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Evict(len uint32) {
-	promCacheUsed.WithLabelValues(m.key).Add(-float64(len))
-	promCacheFree.WithLabelValues(m.key).Add(float64(len))
+func (m PrometheusMetrics) Evict() {
 	promCacheEvict.WithLabelValues(m.key).Add(1)
 }
 
