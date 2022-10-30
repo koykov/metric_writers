@@ -24,8 +24,7 @@ func (m PrometheusMetrics) Alloc(cap uint64) {
 
 func (m PrometheusMetrics) Grow(capOld, cap uint64) {
 	promGrow.WithLabelValues().Add(1)
-	promMem.Sub(float64(capOld))
-	promMem.Add(float64(cap))
+	promMem.Add(float64(cap - capOld))
 }
 
 func (m PrometheusMetrics) Free(cap uint64) {
