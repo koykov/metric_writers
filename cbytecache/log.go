@@ -1,6 +1,9 @@
 package cbytecache
 
-import "log"
+import (
+	"log"
+	"time"
+)
 
 // LogMetrics is Log implementation of cbytecache.MetricsWriter.
 //
@@ -26,20 +29,20 @@ func (m LogMetrics) Release(size uint32) {
 	log.Printf("cbytecache %s: release cache size to %d bytes\n", m.key, size)
 }
 
-func (m LogMetrics) Set(len uint32) {
-	log.Printf("cbytecache %s: set new entry with len %d\n", m.key, len)
+func (m LogMetrics) Set(len uint32, dur time.Duration) {
+	log.Printf("cbytecache %s: set new entry with len %d took %s\n", m.key, len, dur)
 }
 
-func (m LogMetrics) Evict(len uint32) {
-	log.Printf("cbytecache %s: evict entry with len %d\n", m.key, len)
+func (m LogMetrics) Evict() {
+	log.Printf("cbytecache %s: evict entry\n", m.key)
 }
 
 func (m LogMetrics) Miss() {
 	log.Printf("cbytecache %s: cache miss\n", m.key)
 }
 
-func (m LogMetrics) Hit() {
-	log.Printf("cbytecache %s: cache hit\n", m.key)
+func (m LogMetrics) Hit(dur time.Duration) {
+	log.Printf("cbytecache %s: cache hit took %s\n", m.key, dur)
 }
 
 func (m LogMetrics) Expire() {
@@ -55,6 +58,14 @@ func (m LogMetrics) Collision() {
 }
 
 func (m LogMetrics) NoSpace() {
+	log.Printf("cbytecache %s: no space available to set new entry\n", m.key)
+}
+
+func (m LogMetrics) Dump() {
+	log.Printf("cbytecache %s: no space available to set new entry\n", m.key)
+}
+
+func (m LogMetrics) Load() {
 	log.Printf("cbytecache %s: no space available to set new entry\n", m.key)
 }
 

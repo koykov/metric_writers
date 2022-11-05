@@ -1,19 +1,22 @@
 package cbytecache
 
 import (
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 // PrometheusMetrics is a Prometheus implementation of cbytecache.MetricsWriter.
 type PrometheusMetrics struct {
-	key string
+	key  string
+	prec time.Duration
 }
 
 var (
 	promCacheSize, promCacheUsed, promCacheFree *prometheus.GaugeVec
 
 	promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss,
-	promCacheExpired, promCacheCorrupted, promCacheNoSpace *prometheus.CounterVec
+	promCacheExpired, promCacheCorrupted, promCacheNoSpace, promCacheDump, promCacheLoad *prometheus.CounterVec
 
 	promCacheSetSpeed, promCacheGetSpeed *prometheus.HistogramVec
 
@@ -66,6 +69,14 @@ func init() {
 		Name: "cbytecache_no_space",
 		Help: "Count set attempts failed due to no space.",
 	}, []string{"cache"})
+	promCacheDump = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "cbytecache_dump",
+		Help: "Count dumped entries.",
+	}, []string{"cache"})
+	promCacheLoad = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "cbytecache_load",
+		Help: "Count entries loaded from dump.",
+	}, []string{"cache"})
 
 	speedBuckets := append(prometheus.DefBuckets, []float64{15, 20, 30, 40, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 3000, 5000}...)
 	promCacheSetSpeed = prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -81,11 +92,21 @@ func init() {
 
 	prometheus.MustRegister(promCacheSize, promCacheUsed, promCacheFree,
 		promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired,
-		promCacheCorrupted, promCacheNoSpace, promCacheSetSpeed, promCacheGetSpeed)
+		promCacheCorrupted, promCacheNoSpace, promCacheSetSpeed, promCacheGetSpeed, promCacheDump, promCacheLoad)
 }
 
 func NewPrometheusMetrics(key string) *PrometheusMetrics {
-	m := &PrometheusMetrics{key}
+	return NewPrometheusMetricsWP(key, time.Nanosecond)
+}
+
+func NewPrometheusMetricsWP(key string, precision time.Duration) *PrometheusMetrics {
+	if precision == 0 {
+		precision = time.Nanosecond
+	}
+	m := &PrometheusMetrics{
+		key:  key,
+		prec: precision,
+	}
 	return m
 }
 
@@ -104,10 +125,11 @@ func (m PrometheusMetrics) Release(len uint32) {
 	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
 }
 
-func (m PrometheusMetrics) Set(len uint32) {
+func (m PrometheusMetrics) Set(len uint32, dur time.Duration) {
 	promCacheUsed.WithLabelValues(m.key).Add(float64(len))
 	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
 	promCacheSet.WithLabelValues(m.key).Add(1)
+	promCacheSetSpeed.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
 func (m PrometheusMetrics) Evict() {
@@ -118,8 +140,9 @@ func (m PrometheusMetrics) Miss() {
 	promCacheMiss.WithLabelValues(m.key).Add(1)
 }
 
-func (m PrometheusMetrics) Hit() {
+func (m PrometheusMetrics) Hit(dur time.Duration) {
 	promCacheHit.WithLabelValues(m.key).Add(1)
+	promCacheGetSpeed.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
 func (m PrometheusMetrics) Expire() {
@@ -136,4 +159,12 @@ func (m PrometheusMetrics) Collision() {
 
 func (m PrometheusMetrics) NoSpace() {
 	promCacheNoSpace.WithLabelValues(m.key).Add(1)
+}
+
+func (m PrometheusMetrics) Dump() {
+	promCacheDump.WithLabelValues(m.key).Add(1)
+}
+
+func (m PrometheusMetrics) Load() {
+	promCacheLoad.WithLabelValues(m.key).Add(1)
 }
