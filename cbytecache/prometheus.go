@@ -18,7 +18,7 @@ var (
 	promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss,
 	promCacheExpired, promCacheCorrupted, promCacheNoSpace, promCacheDump, promCacheLoad *prometheus.CounterVec
 
-	promCacheSetSpeed, promCacheGetSpeed *prometheus.HistogramVec
+	promCacheSpeedWrite, promCacheSpeedRead *prometheus.HistogramVec
 
 	_ = NewPrometheusMetrics
 )
@@ -79,20 +79,20 @@ func init() {
 	}, []string{"cache"})
 
 	speedBuckets := append(prometheus.DefBuckets, []float64{15, 20, 30, 40, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 3000, 5000}...)
-	promCacheSetSpeed = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "cbytecache_set_speed",
-		Help:    "Set method speed in nanoseconds.",
+	promCacheSpeedWrite = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "cbytecache_write_speed",
+		Help:    "Cache write speed.",
 		Buckets: speedBuckets,
 	}, []string{"cache"})
-	promCacheGetSpeed = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "cbytecache_get_speed",
-		Help:    "Get method speed in nanoseconds.",
+	promCacheSpeedRead = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "cbytecache_read_speed",
+		Help:    "Cache read speed.",
 		Buckets: speedBuckets,
 	}, []string{"cache"})
 
 	prometheus.MustRegister(promCacheSize, promCacheUsed, promCacheFree,
 		promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired,
-		promCacheCorrupted, promCacheNoSpace, promCacheSetSpeed, promCacheGetSpeed, promCacheDump, promCacheLoad)
+		promCacheCorrupted, promCacheNoSpace, promCacheSpeedWrite, promCacheSpeedRead, promCacheDump, promCacheLoad)
 }
 
 func NewPrometheusMetrics(key string) *PrometheusMetrics {
@@ -129,7 +129,7 @@ func (m PrometheusMetrics) Set(len uint32, dur time.Duration) {
 	promCacheUsed.WithLabelValues(m.key).Add(float64(len))
 	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
 	promCacheSet.WithLabelValues(m.key).Add(1)
-	promCacheSetSpeed.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
+	promCacheSpeedWrite.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
 func (m PrometheusMetrics) Evict() {
@@ -142,7 +142,7 @@ func (m PrometheusMetrics) Miss() {
 
 func (m PrometheusMetrics) Hit(dur time.Duration) {
 	promCacheHit.WithLabelValues(m.key).Add(1)
-	promCacheGetSpeed.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
+	promCacheSpeedRead.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
 func (m PrometheusMetrics) Expire() {
