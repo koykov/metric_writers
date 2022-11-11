@@ -1,15 +1,12 @@
 package laborpool
 
 import (
-	"time"
-
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 // PrometheusMetrics is a Prometheus implementation of queue.MetricsWriter.
 type PrometheusMetrics struct {
 	name string
-	prec time.Duration
 }
 
 var (
