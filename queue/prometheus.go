@@ -56,7 +56,7 @@ func init() {
 	promQueueLeak = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "queue_leak",
 		Help: "How many items dropped on the floor due to queue is full.",
-	}, []string{"queue"})
+	}, []string{"queue", "dir"})
 	promQueueLost = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "queue_lost",
 		Help: "How many items throw to the trash due to force close.",
@@ -146,8 +146,8 @@ func (m PrometheusMetrics) QueueRetry() {
 	promQueueRetry.WithLabelValues(m.name).Inc()
 }
 
-func (m PrometheusMetrics) QueueLeak() {
-	promQueueLeak.WithLabelValues(m.name).Inc()
+func (m PrometheusMetrics) QueueLeak(dir string) {
+	promQueueLeak.WithLabelValues(m.name, dir).Inc()
 	promQueueSize.WithLabelValues(m.name).Dec()
 }
 
