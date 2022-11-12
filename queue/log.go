@@ -61,8 +61,12 @@ func (m LogMetrics) QueueRetry() {
 	log.Printf("queue %s: retry item processing due to fail\n", m.name)
 }
 
-func (m LogMetrics) QueueLeak(dir string) {
-	log.Printf("queue %s: queue leak from %s\n", m.name, dir)
+func (m LogMetrics) QueueLeak(dir q.LeakDirection) {
+	dirs := "rear"
+	if dir == q.LeakDirectionFront {
+		dirs = "front"
+	}
+	log.Printf("queue %s: queue leak from %s\n", m.name, dirs)
 }
 
 func (m LogMetrics) QueueLost() {

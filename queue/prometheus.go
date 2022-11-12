@@ -146,8 +146,12 @@ func (m PrometheusMetrics) QueueRetry() {
 	promQueueRetry.WithLabelValues(m.name).Inc()
 }
 
-func (m PrometheusMetrics) QueueLeak(dir string) {
-	promQueueLeak.WithLabelValues(m.name, dir).Inc()
+func (m PrometheusMetrics) QueueLeak(dir q.LeakDirection) {
+	dirs := "rear"
+	if dir == q.LeakDirectionFront {
+		dirs = "front"
+	}
+	promQueueLeak.WithLabelValues(m.name, dirs).Inc()
 	promQueueSize.WithLabelValues(m.name).Dec()
 }
 
