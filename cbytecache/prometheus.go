@@ -115,11 +115,6 @@ func (m PrometheusMetrics) Alloc(size uint32) {
 	promCacheFree.WithLabelValues(m.key).Add(float64(size))
 }
 
-func (m PrometheusMetrics) Free(len uint32) {
-	promCacheUsed.WithLabelValues(m.key).Add(-float64(len))
-	promCacheFree.WithLabelValues(m.key).Add(float64(len))
-}
-
 func (m PrometheusMetrics) Release(len uint32) {
 	promCacheSize.WithLabelValues(m.key).Add(-float64(len))
 	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
@@ -132,8 +127,10 @@ func (m PrometheusMetrics) Set(len uint32, dur time.Duration) {
 	promCacheSpeedWrite.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
-func (m PrometheusMetrics) Evict() {
+func (m PrometheusMetrics) Evict(len uint32) {
 	promCacheEvict.WithLabelValues(m.key).Add(1)
+	promCacheUsed.WithLabelValues(m.key).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.key).Add(float64(len))
 }
 
 func (m PrometheusMetrics) Miss() {

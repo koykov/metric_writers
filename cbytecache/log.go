@@ -21,10 +21,6 @@ func (m LogMetrics) Alloc(size uint32) {
 	log.Printf("cbytecache %s: grow size with %d bytes\n", m.key, size)
 }
 
-func (m LogMetrics) Free(size uint32) {
-	log.Printf("cbytecache %s: reduce size with %d bytes\n", m.key, size)
-}
-
 func (m LogMetrics) Release(size uint32) {
 	log.Printf("cbytecache %s: release cache size to %d bytes\n", m.key, size)
 }
@@ -33,8 +29,8 @@ func (m LogMetrics) Set(len uint32, dur time.Duration) {
 	log.Printf("cbytecache %s: set new entry with len %d took %s\n", m.key, len, dur)
 }
 
-func (m LogMetrics) Evict() {
-	log.Printf("cbytecache %s: evict entry\n", m.key)
+func (m LogMetrics) Evict(len uint32) {
+	log.Printf("cbytecache %s: evict entry with len %d\n", m.key, len)
 }
 
 func (m LogMetrics) Miss() {
