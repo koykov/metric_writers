@@ -17,44 +17,48 @@ func NewLogMetrics(key string) *LogMetrics {
 	return m
 }
 
-func (m LogMetrics) Alloc(size uint32) {
-	log.Printf("cbytecache %s: grow size with %d bytes\n", m.key, size)
+func (m LogMetrics) Alloc(bucket string, size uint32) {
+	log.Printf("cbytecache %s: grow bucket %s size with %d bytes\n", m.key, bucket, size)
 }
 
-func (m LogMetrics) Release(size uint32) {
-	log.Printf("cbytecache %s: release cache size to %d bytes\n", m.key, size)
+func (m LogMetrics) Release(bucket string, size uint32) {
+	log.Printf("cbytecache %s: release bucket %s size to %d bytes\n", m.key, bucket, size)
 }
 
-func (m LogMetrics) Set(len uint32, dur time.Duration) {
-	log.Printf("cbytecache %s: set new entry with len %d took %s\n", m.key, len, dur)
+func (m LogMetrics) Set(bucket string, len uint32, dur time.Duration) {
+	log.Printf("cbytecache %s: set new entry with len %d to bucket %s took %s\n", m.key, len, bucket, dur)
 }
 
-func (m LogMetrics) Evict(len uint32) {
-	log.Printf("cbytecache %s: evict entry with len %d\n", m.key, len)
+func (m LogMetrics) Reset(bucket string, count int) {
+	log.Printf("cbytecache %s: reset %d arenas in bucket %s\n", m.key, count, bucket)
 }
 
-func (m LogMetrics) Miss() {
-	log.Printf("cbytecache %s: cache miss\n", m.key)
+func (m LogMetrics) Evict(bucket string, len uint32) {
+	log.Printf("cbytecache %s: evict entry with len %d from bucket %s\n", m.key, len, bucket)
 }
 
-func (m LogMetrics) Hit(dur time.Duration) {
-	log.Printf("cbytecache %s: cache hit took %s\n", m.key, dur)
+func (m LogMetrics) Miss(bucket string) {
+	log.Printf("cbytecache %s: cache miss in bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) Expire() {
-	log.Printf("cbytecache %s: hit expired entry\n", m.key)
+func (m LogMetrics) Hit(bucket string, dur time.Duration) {
+	log.Printf("cbytecache %s: cache hit in bucket %s took %s\n", m.key, bucket, dur)
 }
 
-func (m LogMetrics) Corrupt() {
-	log.Printf("cbytecache %s: hit corrupted entry\n", m.key)
+func (m LogMetrics) Expire(bucket string) {
+	log.Printf("cbytecache %s: hit expired entry in bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) Collision() {
-	log.Printf("cbytecache %s: keys collision\n", m.key)
+func (m LogMetrics) Corrupt(bucket string) {
+	log.Printf("cbytecache %s: hit corrupted entry in bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) NoSpace() {
-	log.Printf("cbytecache %s: no space available to set new entry\n", m.key)
+func (m LogMetrics) Collision(bucket string) {
+	log.Printf("cbytecache %s: keys collision in bucket %s\n", m.key, bucket)
+}
+
+func (m LogMetrics) NoSpace(bucket string) {
+	log.Printf("cbytecache %s: no space in bucket %s\n", m.key, bucket)
 }
 
 func (m LogMetrics) Dump() {

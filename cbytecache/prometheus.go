@@ -13,10 +13,11 @@ type PrometheusMetrics struct {
 }
 
 var (
-	promCacheSize, promCacheUsed, promCacheFree *prometheus.GaugeVec
+	promCacheSize, promCacheUsed, promCacheFree, promCacheArena *prometheus.GaugeVec
 
 	promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss,
-	promCacheExpired, promCacheCorrupted, promCacheNoSpace, promCacheDump, promCacheLoad *prometheus.CounterVec
+	promCacheExpired, promCacheCorrupted, promCacheNoSpace, promCacheDump, promCacheLoad,
+	promCacheArenaAlloc, promCacheArenaReset, promCacheArenaRelease *prometheus.CounterVec
 
 	promCacheSpeedWrite, promCacheSpeedRead *prometheus.HistogramVec
 
@@ -26,49 +27,65 @@ var (
 func init() {
 	promCacheSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "cbytecache_size_total",
-		Help: "Total cache size in bytes.",
-	}, []string{"cache"})
+		Help: "Total cache (bucket) size in bytes.",
+	}, []string{"cache", "bucket"})
 	promCacheUsed = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "cbytecache_size_used",
-		Help: "Used cache size in bytes.",
-	}, []string{"cache"})
+		Help: "Used cache (bucket) size in bytes.",
+	}, []string{"cache", "bucket"})
 	promCacheFree = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "cbytecache_size_free",
-		Help: "Free cache size in bytes.",
-	}, []string{"cache"})
+		Help: "Free cache (bucket) size in bytes.",
+	}, []string{"cache", "bucket"})
+	promCacheArena = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "cbytecache_arena",
+		Help: "Arenas count in cache (bucket).",
+	}, []string{"cache", "bucket"})
 
 	promCacheSet = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_set",
 		Help: "Count cache set calls.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheCollision = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_collision",
 		Help: "Count keys collisions.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheEvict = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_evict",
 		Help: "Count cache evict calls.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheHit = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_hit",
 		Help: "Count cache hits.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheMiss = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_miss",
 		Help: "Count cache misses.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheExpired = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_expire",
 		Help: "Count expired entries.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheCorrupted = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_corrupt",
 		Help: "Count corrupted entries.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheNoSpace = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_no_space",
 		Help: "Count set attempts failed due to no space.",
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
+	promCacheArenaAlloc = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "cbytecache_arena_alloc",
+		Help: "Count arenas allocations.",
+	}, []string{"cache", "bucket"})
+	promCacheArenaReset = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "cbytecache_arena_reset",
+		Help: "Count arenas cleanups.",
+	}, []string{"cache", "bucket"})
+	promCacheArenaRelease = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "cbytecache_arena_release",
+		Help: "Count arenas releases.",
+	}, []string{"cache", "bucket"})
 	promCacheDump = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_dump",
 		Help: "Count dumped entries.",
@@ -83,16 +100,17 @@ func init() {
 		Name:    "cbytecache_write_speed",
 		Help:    "Cache write speed.",
 		Buckets: speedBuckets,
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 	promCacheSpeedRead = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "cbytecache_read_speed",
 		Help:    "Cache read speed.",
 		Buckets: speedBuckets,
-	}, []string{"cache"})
+	}, []string{"cache", "bucket"})
 
-	prometheus.MustRegister(promCacheSize, promCacheUsed, promCacheFree,
+	prometheus.MustRegister(promCacheSize, promCacheUsed, promCacheFree, promCacheArena,
 		promCacheSet, promCacheCollision, promCacheEvict, promCacheHit, promCacheMiss, promCacheExpired,
-		promCacheCorrupted, promCacheNoSpace, promCacheSpeedWrite, promCacheSpeedRead, promCacheDump, promCacheLoad)
+		promCacheCorrupted, promCacheNoSpace, promCacheSpeedWrite, promCacheSpeedRead, promCacheDump, promCacheLoad,
+		promCacheArenaAlloc, promCacheArenaReset, promCacheArenaRelease)
 }
 
 func NewPrometheusMetrics(key string) *PrometheusMetrics {
@@ -110,52 +128,60 @@ func NewPrometheusMetricsWP(key string, precision time.Duration) *PrometheusMetr
 	return m
 }
 
-func (m PrometheusMetrics) Alloc(size uint32) {
-	promCacheSize.WithLabelValues(m.key).Add(float64(size))
-	promCacheFree.WithLabelValues(m.key).Add(float64(size))
+func (m PrometheusMetrics) Alloc(bucket string, size uint32) {
+	promCacheSize.WithLabelValues(m.key, bucket).Add(float64(size))
+	promCacheFree.WithLabelValues(m.key, bucket).Add(float64(size))
+	promCacheArena.WithLabelValues(m.key, bucket).Inc()
+	promCacheArenaAlloc.WithLabelValues(m.key, bucket).Inc()
 }
 
-func (m PrometheusMetrics) Release(len uint32) {
-	promCacheSize.WithLabelValues(m.key).Add(-float64(len))
-	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
+func (m PrometheusMetrics) Release(bucket string, len uint32) {
+	promCacheSize.WithLabelValues(m.key, bucket).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.key, bucket).Add(-float64(len))
+	promCacheArena.WithLabelValues(m.key, bucket).Dec()
+	promCacheArenaRelease.WithLabelValues(m.key, bucket).Add(1)
 }
 
-func (m PrometheusMetrics) Set(len uint32, dur time.Duration) {
-	promCacheUsed.WithLabelValues(m.key).Add(float64(len))
-	promCacheFree.WithLabelValues(m.key).Add(-float64(len))
-	promCacheSet.WithLabelValues(m.key).Add(1)
-	promCacheSpeedWrite.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
+func (m PrometheusMetrics) Set(bucket string, len uint32, dur time.Duration) {
+	promCacheUsed.WithLabelValues(m.key, bucket).Add(float64(len))
+	promCacheFree.WithLabelValues(m.key, bucket).Add(-float64(len))
+	promCacheSet.WithLabelValues(m.key, bucket).Add(1)
+	promCacheSpeedWrite.WithLabelValues(m.key, bucket).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
-func (m PrometheusMetrics) Evict(len uint32) {
-	promCacheEvict.WithLabelValues(m.key).Add(1)
-	promCacheUsed.WithLabelValues(m.key).Add(-float64(len))
-	promCacheFree.WithLabelValues(m.key).Add(float64(len))
+func (m PrometheusMetrics) Reset(bucket string, count int) {
+	promCacheArenaReset.WithLabelValues(m.key, bucket).Add(float64(count))
 }
 
-func (m PrometheusMetrics) Miss() {
-	promCacheMiss.WithLabelValues(m.key).Add(1)
+func (m PrometheusMetrics) Evict(bucket string, len uint32) {
+	promCacheEvict.WithLabelValues(m.key, bucket).Add(1)
+	promCacheUsed.WithLabelValues(m.key, bucket).Add(-float64(len))
+	promCacheFree.WithLabelValues(m.key, bucket).Add(float64(len))
 }
 
-func (m PrometheusMetrics) Hit(dur time.Duration) {
-	promCacheHit.WithLabelValues(m.key).Add(1)
-	promCacheSpeedRead.WithLabelValues(m.key).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
+func (m PrometheusMetrics) Miss(bucket string) {
+	promCacheMiss.WithLabelValues(m.key, bucket).Add(1)
 }
 
-func (m PrometheusMetrics) Expire() {
-	promCacheExpired.WithLabelValues(m.key).Add(1)
+func (m PrometheusMetrics) Hit(bucket string, dur time.Duration) {
+	promCacheHit.WithLabelValues(m.key, bucket).Add(1)
+	promCacheSpeedRead.WithLabelValues(m.key, bucket).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
-func (m PrometheusMetrics) Corrupt() {
-	promCacheCorrupted.WithLabelValues(m.key).Add(1)
+func (m PrometheusMetrics) Expire(bucket string) {
+	promCacheExpired.WithLabelValues(m.key, bucket).Add(1)
 }
 
-func (m PrometheusMetrics) Collision() {
-	promCacheCollision.WithLabelValues(m.key).Add(1)
+func (m PrometheusMetrics) Corrupt(bucket string) {
+	promCacheCorrupted.WithLabelValues(m.key, bucket).Add(1)
 }
 
-func (m PrometheusMetrics) NoSpace() {
-	promCacheNoSpace.WithLabelValues(m.key).Add(1)
+func (m PrometheusMetrics) Collision(bucket string) {
+	promCacheCollision.WithLabelValues(m.key, bucket).Add(1)
+}
+
+func (m PrometheusMetrics) NoSpace(bucket string) {
+	promCacheNoSpace.WithLabelValues(m.key, bucket).Add(1)
 }
 
 func (m PrometheusMetrics) Dump() {
