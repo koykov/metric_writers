@@ -139,13 +139,13 @@ func (m PrometheusMetrics) Release(bucket string, len uint32) {
 	promCacheSize.WithLabelValues(m.key, bucket).Add(-float64(len))
 	promCacheFree.WithLabelValues(m.key, bucket).Add(-float64(len))
 	promCacheArena.WithLabelValues(m.key, bucket).Dec()
-	promCacheArenaRelease.WithLabelValues(m.key, bucket).Add(1)
+	promCacheArenaRelease.WithLabelValues(m.key, bucket).Inc()
 }
 
 func (m PrometheusMetrics) Set(bucket string, len uint32, dur time.Duration) {
 	promCacheUsed.WithLabelValues(m.key, bucket).Add(float64(len))
 	promCacheFree.WithLabelValues(m.key, bucket).Add(-float64(len))
-	promCacheSet.WithLabelValues(m.key, bucket).Add(1)
+	promCacheSet.WithLabelValues(m.key, bucket).Inc()
 	promCacheSpeedWrite.WithLabelValues(m.key, bucket).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
@@ -154,40 +154,40 @@ func (m PrometheusMetrics) Reset(bucket string, count int) {
 }
 
 func (m PrometheusMetrics) Evict(bucket string, len uint32) {
-	promCacheEvict.WithLabelValues(m.key, bucket).Add(1)
+	promCacheEvict.WithLabelValues(m.key, bucket).Inc()
 	promCacheUsed.WithLabelValues(m.key, bucket).Add(-float64(len))
 	promCacheFree.WithLabelValues(m.key, bucket).Add(float64(len))
 }
 
 func (m PrometheusMetrics) Miss(bucket string) {
-	promCacheMiss.WithLabelValues(m.key, bucket).Add(1)
+	promCacheMiss.WithLabelValues(m.key, bucket).Inc()
 }
 
 func (m PrometheusMetrics) Hit(bucket string, dur time.Duration) {
-	promCacheHit.WithLabelValues(m.key, bucket).Add(1)
+	promCacheHit.WithLabelValues(m.key, bucket).Inc()
 	promCacheSpeedRead.WithLabelValues(m.key, bucket).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
 func (m PrometheusMetrics) Expire(bucket string) {
-	promCacheExpired.WithLabelValues(m.key, bucket).Add(1)
+	promCacheExpired.WithLabelValues(m.key, bucket).Inc()
 }
 
 func (m PrometheusMetrics) Corrupt(bucket string) {
-	promCacheCorrupted.WithLabelValues(m.key, bucket).Add(1)
+	promCacheCorrupted.WithLabelValues(m.key, bucket).Inc()
 }
 
 func (m PrometheusMetrics) Collision(bucket string) {
-	promCacheCollision.WithLabelValues(m.key, bucket).Add(1)
+	promCacheCollision.WithLabelValues(m.key, bucket).Inc()
 }
 
 func (m PrometheusMetrics) NoSpace(bucket string) {
-	promCacheNoSpace.WithLabelValues(m.key, bucket).Add(1)
+	promCacheNoSpace.WithLabelValues(m.key, bucket).Inc()
 }
 
 func (m PrometheusMetrics) Dump() {
-	promCacheDump.WithLabelValues(m.key).Add(1)
+	promCacheDump.WithLabelValues(m.key).Inc()
 }
 
 func (m PrometheusMetrics) Load() {
-	promCacheLoad.WithLabelValues(m.key).Add(1)
+	promCacheLoad.WithLabelValues(m.key).Inc()
 }
