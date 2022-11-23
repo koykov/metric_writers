@@ -29,8 +29,24 @@ func (m LogMetrics) Set(bucket string, len uint32, dur time.Duration) {
 	log.Printf("cbytecache %s: set new entry with len %d to bucket %s took %s\n", m.key, len, bucket, dur)
 }
 
-func (m LogMetrics) Reset(bucket string, count int) {
-	log.Printf("cbytecache %s: reset %d arenas in bucket %s\n", m.key, count, bucket)
+func (m LogMetrics) ArenaAlloc(bucket string, append_ bool) {
+	if append_ {
+		log.Printf("cbytecache %s: append new arena to bucket %s\n", m.key, bucket)
+	} else {
+		log.Printf("cbytecache %s: realloc released arena to bucket %s\n", m.key, bucket)
+	}
+}
+
+func (m LogMetrics) ArenaReset(bucket string) {
+	log.Printf("cbytecache %s: reset arena in bucket %s\n", m.key, bucket)
+}
+
+func (m LogMetrics) ArenaFill(bucket string) {
+	log.Printf("cbytecache %s: fill arena in bucket %s\n", m.key, bucket)
+}
+
+func (m LogMetrics) ArenaRelease(bucket string) {
+	log.Printf("cbytecache %s: release arena in bucket %s\n", m.key, bucket)
 }
 
 func (m LogMetrics) Evict(bucket string, len uint32) {
