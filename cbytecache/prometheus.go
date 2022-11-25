@@ -144,6 +144,7 @@ func (m PrometheusMetrics) ArenaFill(bucket string) {
 func (m PrometheusMetrics) ArenaRelease(bucket string) {
 	promArena.WithLabelValues(m.key, bucket, arenaFree).Dec()
 	promArena.WithLabelValues(m.key, bucket, arenaRelease).Inc()
+	promArenaIO.WithLabelValues(m.key, bucket, arenaIORelease).Inc()
 }
 
 func (m PrometheusMetrics) Evict(bucket string, len uint32) {
