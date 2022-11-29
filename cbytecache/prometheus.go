@@ -23,10 +23,10 @@ const (
 	speedWrite = "write"
 	speedRead  = "read"
 
-	arenaTotal   = "total"
-	arenaUsed    = "used"
-	arenaFree    = "free"
-	arenaRelease = "release"
+	// arenaTotal   = "total"
+	// arenaUsed    = "used"
+	// arenaFree    = "free"
+	// arenaRelease = "release"
 
 	arenaIOAlloc   = "alloc"
 	arenaIORelease = "release"
@@ -103,54 +103,38 @@ func NewPrometheusMetricsWP(key string, precision time.Duration) *PrometheusMetr
 func (m PrometheusMetrics) Alloc(bucket string, size uint32) {
 	promSize.WithLabelValues(m.key, bucket, cacheTotal).Add(float64(size))
 	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(float64(size))
+
 	promArenaIO.WithLabelValues(m.key, bucket, arenaIOAlloc).Inc()
+}
+
+func (m PrometheusMetrics) Fill(bucket string, size uint32) {
+	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(-float64(size))
+	promSize.WithLabelValues(m.key, bucket, cacheUsed).Add(float64(size))
+
+	promArenaIO.WithLabelValues(m.key, bucket, arenaIOFill).Inc()
+}
+
+func (m PrometheusMetrics) Reset(bucket string, size uint32) {
+	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(float64(size))
+	promSize.WithLabelValues(m.key, bucket, cacheUsed).Add(-float64(size))
+
+	promArenaIO.WithLabelValues(m.key, bucket, arenaIOReset).Inc()
 }
 
 func (m PrometheusMetrics) Release(bucket string, len uint32) {
 	promSize.WithLabelValues(m.key, bucket, cacheTotal).Add(-float64(len))
 	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(-float64(len))
+
 	promArenaIO.WithLabelValues(m.key, bucket, arenaIORelease).Inc()
 }
 
-func (m PrometheusMetrics) Set(bucket string, len uint32, dur time.Duration) {
-	promSize.WithLabelValues(m.key, bucket, cacheUsed).Add(float64(len))
-	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(-float64(len))
+func (m PrometheusMetrics) Set(bucket string, dur time.Duration) {
 	promIO.WithLabelValues(m.key, bucket, cacheIOSet).Inc()
 	promSpeed.WithLabelValues(m.key, bucket, speedWrite).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
-func (m PrometheusMetrics) ArenaAlloc(bucket string, append_ bool) {
-	if append_ {
-		promArena.WithLabelValues(m.key, bucket, arenaTotal).Inc()
-	} else {
-		promArena.WithLabelValues(m.key, bucket, arenaRelease).Dec()
-	}
-	promArena.WithLabelValues(m.key, bucket, arenaFree).Inc()
-	promArenaIO.WithLabelValues(m.key, bucket, arenaIOAlloc).Inc()
-}
-
-func (m PrometheusMetrics) ArenaReset(bucket string) {
-	promArena.WithLabelValues(m.key, bucket, arenaFree).Inc()
-	promArena.WithLabelValues(m.key, bucket, arenaUsed).Dec()
-	promArenaIO.WithLabelValues(m.key, bucket, arenaIOReset).Inc()
-}
-
-func (m PrometheusMetrics) ArenaFill(bucket string) {
-	promArena.WithLabelValues(m.key, bucket, arenaFree).Dec()
-	promArena.WithLabelValues(m.key, bucket, arenaUsed).Inc()
-	promArenaIO.WithLabelValues(m.key, bucket, arenaIOFill).Inc()
-}
-
-func (m PrometheusMetrics) ArenaRelease(bucket string) {
-	promArena.WithLabelValues(m.key, bucket, arenaFree).Dec()
-	promArena.WithLabelValues(m.key, bucket, arenaRelease).Inc()
-	promArenaIO.WithLabelValues(m.key, bucket, arenaIORelease).Inc()
-}
-
-func (m PrometheusMetrics) Evict(bucket string, len uint32) {
+func (m PrometheusMetrics) Evict(bucket string) {
 	promIO.WithLabelValues(m.key, bucket, cacheIOEvict).Inc()
-	promSize.WithLabelValues(m.key, bucket, cacheUsed).Add(-float64(len))
-	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(float64(len))
 }
 
 func (m PrometheusMetrics) Miss(bucket string) {
