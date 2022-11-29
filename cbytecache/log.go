@@ -17,40 +17,33 @@ func NewLogMetrics(key string) *LogMetrics {
 	return m
 }
 
-func (m LogMetrics) Alloc(bucket string, size uint32) {
-	log.Printf("cbytecache %s: grow bucket %s size with %d bytes\n", m.key, bucket, size)
+func (m LogMetrics) Alloc(bucket string) {
+	log.Printf("cbytecache %s: alloc new arena in bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) Release(bucket string, size uint32) {
-	log.Printf("cbytecache %s: release bucket %s size to %d bytes\n", m.key, bucket, size)
+func (m LogMetrics) Fill(bucket string) {
+	log.Printf("cbytecache %s: fill arena of bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) Set(bucket string, len uint32, dur time.Duration) {
-	log.Printf("cbytecache %s: set new entry with len %d to bucket %s took %s\n", m.key, len, bucket, dur)
+func (m LogMetrics) Reset(bucket string) {
+	log.Printf("cbytecache %s: reset arena of bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) ArenaAlloc(bucket string, append_ bool) {
-	if append_ {
-		log.Printf("cbytecache %s: append new arena to bucket %s\n", m.key, bucket)
-	} else {
-		log.Printf("cbytecache %s: realloc released arena to bucket %s\n", m.key, bucket)
-	}
+func (m LogMetrics) Release(bucket string) {
+	log.Printf("cbytecache %s: release arena of bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) ArenaReset(bucket string) {
-	log.Printf("cbytecache %s: reset arena in bucket %s\n", m.key, bucket)
+func (m LogMetrics) ArenaMap(bucket string, total, used, free, size uint32) {
+	log.Printf("cbytecache %s: arenas mapping: total %d, used %d, free %d with size %d bytes  %s\n",
+		m.key, bucket, total, used, free, size)
 }
 
-func (m LogMetrics) ArenaFill(bucket string) {
-	log.Printf("cbytecache %s: fill arena in bucket %s\n", m.key, bucket)
+func (m LogMetrics) Set(bucket string, dur time.Duration) {
+	log.Printf("cbytecache %s: set new entry to bucket %s took %s\n", m.key, bucket, dur)
 }
 
-func (m LogMetrics) ArenaRelease(bucket string) {
-	log.Printf("cbytecache %s: release arena in bucket %s\n", m.key, bucket)
-}
-
-func (m LogMetrics) Evict(bucket string, len uint32) {
-	log.Printf("cbytecache %s: evict entry with len %d from bucket %s\n", m.key, len, bucket)
+func (m LogMetrics) Evict(bucket string) {
+	log.Printf("cbytecache %s: evict entry from bucket %s\n", m.key, bucket)
 }
 
 func (m LogMetrics) Miss(bucket string) {
