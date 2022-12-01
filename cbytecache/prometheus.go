@@ -10,6 +10,7 @@ const (
 	cacheTotal = "total"
 	cacheUsed  = "used"
 	cacheFree  = "free"
+	cacheEntry = "entry"
 
 	cacheIOSet       = "set"
 	cacheIOEvict     = "evict"
@@ -126,11 +127,13 @@ func (m PrometheusMetrics) ArenaMap(bucket string, total, used, free, size uint3
 }
 
 func (m PrometheusMetrics) Set(bucket string, dur time.Duration) {
+	promSize.WithLabelValues(m.key, bucket, cacheEntry).Inc()
 	promIO.WithLabelValues(m.key, bucket, cacheIOSet).Inc()
 	promSpeed.WithLabelValues(m.key, bucket, speedWrite).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
 func (m PrometheusMetrics) Evict(bucket string) {
+	promSize.WithLabelValues(m.key, bucket, cacheEntry).Dec()
 	promIO.WithLabelValues(m.key, bucket, cacheIOEvict).Inc()
 }
 
