@@ -100,30 +100,40 @@ func NewPrometheusMetricsWP(key string, precision time.Duration) *PrometheusMetr
 	return m
 }
 
-func (m PrometheusMetrics) Alloc(bucket string) {
+func (m PrometheusMetrics) Alloc(bucket string, size uint32) {
+	promSize.WithLabelValues(m.key, bucket, cacheTotal).Add(float64(size))
+	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(float64(size))
+
+	promArena.WithLabelValues(m.key, bucket, arenaTotal).Inc()
+	promArena.WithLabelValues(m.key, bucket, arenaFree).Inc()
 	promArenaIO.WithLabelValues(m.key, bucket, arenaIOAlloc).Inc()
 }
 
-func (m PrometheusMetrics) Fill(bucket string) {
+func (m PrometheusMetrics) Fill(bucket string, size uint32) {
+	promSize.WithLabelValues(m.key, bucket, cacheUsed).Add(float64(size))
+	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(-float64(size))
+
+	promArena.WithLabelValues(m.key, bucket, arenaUsed).Inc()
+	promArena.WithLabelValues(m.key, bucket, arenaFree).Dec()
 	promArenaIO.WithLabelValues(m.key, bucket, arenaIOFill).Inc()
 }
 
-func (m PrometheusMetrics) Reset(bucket string) {
+func (m PrometheusMetrics) Reset(bucket string, size uint32) {
+	promSize.WithLabelValues(m.key, bucket, cacheUsed).Add(-float64(size))
+	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(float64(size))
+
+	promArena.WithLabelValues(m.key, bucket, arenaUsed).Dec()
+	promArena.WithLabelValues(m.key, bucket, arenaFree).Inc()
 	promArenaIO.WithLabelValues(m.key, bucket, arenaIOReset).Inc()
 }
 
-func (m PrometheusMetrics) Release(bucket string) {
+func (m PrometheusMetrics) Release(bucket string, size uint32) {
+	promSize.WithLabelValues(m.key, bucket, cacheTotal).Add(-float64(size))
+	promSize.WithLabelValues(m.key, bucket, cacheFree).Add(-float64(size))
+
+	promArena.WithLabelValues(m.key, bucket, arenaTotal).Dec()
+	promArena.WithLabelValues(m.key, bucket, arenaFree).Dec()
 	promArenaIO.WithLabelValues(m.key, bucket, arenaIORelease).Inc()
-}
-
-func (m PrometheusMetrics) ArenaMap(bucket string, total, used, free, size uint32) {
-	promSize.WithLabelValues(m.key, bucket, cacheTotal).Set(float64(total * size))
-	promSize.WithLabelValues(m.key, bucket, cacheUsed).Set(float64(used * size))
-	promSize.WithLabelValues(m.key, bucket, cacheFree).Set(float64(free * size))
-
-	promArena.WithLabelValues(m.key, bucket, arenaTotal).Set(float64(total))
-	promArena.WithLabelValues(m.key, bucket, arenaUsed).Set(float64(used))
-	promArena.WithLabelValues(m.key, bucket, arenaFree).Set(float64(free))
 }
 
 func (m PrometheusMetrics) Set(bucket string, dur time.Duration) {

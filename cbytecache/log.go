@@ -17,25 +17,20 @@ func NewLogMetrics(key string) *LogMetrics {
 	return m
 }
 
-func (m LogMetrics) Alloc(bucket string) {
-	log.Printf("cbytecache %s: alloc new arena in bucket %s\n", m.key, bucket)
+func (m LogMetrics) Alloc(bucket string, size uint32) {
+	log.Printf("cbytecache %s: alloc new arena with size %d in bucket %s\n", m.key, size, bucket)
 }
 
-func (m LogMetrics) Fill(bucket string) {
-	log.Printf("cbytecache %s: fill arena of bucket %s\n", m.key, bucket)
+func (m LogMetrics) Fill(bucket string, size uint32) {
+	log.Printf("cbytecache %s: fill arena with size %d bytes of bucket %s\n", m.key, size, bucket)
 }
 
-func (m LogMetrics) Reset(bucket string) {
-	log.Printf("cbytecache %s: reset arena of bucket %s\n", m.key, bucket)
+func (m LogMetrics) Reset(bucket string, size uint32) {
+	log.Printf("cbytecache %s: reset arena with size %d of bucket %s\n", m.key, size, bucket)
 }
 
-func (m LogMetrics) Release(bucket string) {
-	log.Printf("cbytecache %s: release arena of bucket %s\n", m.key, bucket)
-}
-
-func (m LogMetrics) ArenaMap(bucket string, total, used, free, size uint32) {
-	log.Printf("cbytecache %s: arenas mapping: total %d, used %d, free %d with size %d bytes  %s\n",
-		m.key, bucket, total, used, free, size)
+func (m LogMetrics) Release(bucket string, size uint32) {
+	log.Printf("cbytecache %s: release arena with size %d bytes of bucket %s\n", m.key, size, bucket)
 }
 
 func (m LogMetrics) Set(bucket string, dur time.Duration) {
