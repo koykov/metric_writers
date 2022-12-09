@@ -65,12 +65,12 @@ func (m LogMetrics) NoSpace(bucket string) {
 	log.Printf("cbytecache %s: no space in bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) Dump() {
-	log.Printf("cbytecache %s: no space available to set new entry\n", m.key)
+func (m LogMetrics) Dump(bucket string) {
+	log.Printf("cbytecache %s: dump entry of bucket #%s\n", m.key, bucket)
 }
 
-func (m LogMetrics) Load() {
-	log.Printf("cbytecache %s: no space available to set new entry\n", m.key)
+func (m LogMetrics) Load(bucket string) {
+	log.Printf("cbytecache %s: load dumped entry to bucket #%s\n", m.key, bucket)
 }
 
 var _ = NewLogMetrics

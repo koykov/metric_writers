@@ -73,7 +73,7 @@ func init() {
 	promDumpIO = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "cbytecache_dump",
 		Help: "Count dump IO operations calls.",
-	}, []string{"cache", "op"})
+	}, []string{"cache", "bucket", "op"})
 
 	speedBuckets := append(prometheus.DefBuckets, []float64{15, 20, 30, 40, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 3000, 5000}...)
 	promSpeed = prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -172,10 +172,10 @@ func (m PrometheusMetrics) NoSpace(bucket string) {
 	promIO.WithLabelValues(m.key, bucket, cacheIONoSpace).Inc()
 }
 
-func (m PrometheusMetrics) Dump() {
-	promDumpIO.WithLabelValues(m.key, dumpIODump).Inc()
+func (m PrometheusMetrics) Dump(bucket string) {
+	promDumpIO.WithLabelValues(m.key, bucket, dumpIODump).Inc()
 }
 
-func (m PrometheusMetrics) Load() {
-	promDumpIO.WithLabelValues(m.key, dumpIOLoad).Inc()
+func (m PrometheusMetrics) Load(bucket string) {
+	promDumpIO.WithLabelValues(m.key, bucket, dumpIOLoad).Inc()
 }
