@@ -37,6 +37,10 @@ func (m LogMetrics) Set(bucket string, dur time.Duration) {
 	log.Printf("cbytecache %s: set new entry to bucket %s took %s\n", m.key, bucket, dur)
 }
 
+func (m LogMetrics) Del(bucket string) {
+	log.Printf("cbytecache %s: delete entry from bucket %s\n", m.key, bucket)
+}
+
 func (m LogMetrics) Evict(bucket string) {
 	log.Printf("cbytecache %s: evict entry from bucket %s\n", m.key, bucket)
 }

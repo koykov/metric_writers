@@ -16,6 +16,7 @@ const (
 	cacheIOEvict     = "evict"
 	cacheIOMiss      = "miss"
 	cacheIOHit       = "hit"
+	cacheIODel       = "del"
 	cacheIOExpire    = "expire"
 	cacheIOCorrupt   = "corrupt"
 	cacheIOCollision = "collision"
@@ -140,6 +141,10 @@ func (m PrometheusMetrics) Set(bucket string, dur time.Duration) {
 	promSize.WithLabelValues(m.key, bucket, cacheEntry).Inc()
 	promIO.WithLabelValues(m.key, bucket, cacheIOSet).Inc()
 	promSpeed.WithLabelValues(m.key, bucket, speedWrite).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
+}
+
+func (m PrometheusMetrics) Del(bucket string) {
+	promIO.WithLabelValues(m.key, bucket, cacheIODel).Inc()
 }
 
 func (m PrometheusMetrics) Evict(bucket string) {
