@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	cacheTotal = "total"
-	cacheUsed  = "used"
-	cacheFree  = "free"
-	cacheEntry = "entry"
+	cacheTotal       = "total"
+	cacheUsed        = "used"
+	cacheFree        = "free"
+	cacheEntryTotal  = "entry_total"
+	cacheEntryDelete = "entry_delete"
 
 	cacheIOSet       = "set"
 	cacheIOEvict     = "evict"
@@ -138,17 +139,21 @@ func (m PrometheusMetrics) Release(bucket string, size uint32) {
 }
 
 func (m PrometheusMetrics) Set(bucket string, dur time.Duration) {
-	promSize.WithLabelValues(m.key, bucket, cacheEntry).Inc()
+	promSize.WithLabelValues(m.key, bucket, cacheEntryTotal).Inc()
 	promIO.WithLabelValues(m.key, bucket, cacheIOSet).Inc()
 	promSpeed.WithLabelValues(m.key, bucket, speedWrite).Observe(float64(dur.Nanoseconds() / int64(m.prec)))
 }
 
 func (m PrometheusMetrics) Del(bucket string) {
+	promSize.WithLabelValues(m.key, bucket, cacheEntryDelete).Inc()
 	promIO.WithLabelValues(m.key, bucket, cacheIODel).Inc()
 }
 
-func (m PrometheusMetrics) Evict(bucket string) {
-	promSize.WithLabelValues(m.key, bucket, cacheEntry).Dec()
+func (m PrometheusMetrics) Evict(bucket string, alive bool) {
+	promSize.WithLabelValues(m.key, bucket, cacheEntryTotal).Dec()
+	if !alive {
+		promSize.WithLabelValues(m.key, bucket, cacheEntryDelete).Dec()
+	}
 	promIO.WithLabelValues(m.key, bucket, cacheIOEvict).Inc()
 }
 

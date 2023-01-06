@@ -41,7 +41,7 @@ func (m LogMetrics) Del(bucket string) {
 	log.Printf("cbytecache %s: delete entry from bucket %s\n", m.key, bucket)
 }
 
-func (m LogMetrics) Evict(bucket string) {
+func (m LogMetrics) Evict(bucket string, _ bool) {
 	log.Printf("cbytecache %s: evict entry from bucket %s\n", m.key, bucket)
 }
 
