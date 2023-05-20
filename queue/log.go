@@ -72,3 +72,15 @@ func (m LogMetrics) QueueLeak(dir q.LeakDirection) {
 func (m LogMetrics) QueueLost() {
 	log.Printf("queue %s: queue lost\n", m.name)
 }
+
+func (m LogMetrics) SubQueuePut(subq string) {
+	log.Printf("queue %s/%s: new item come to the queue\n", m.name, subq)
+}
+
+func (m LogMetrics) SubQueuePull(subq string) {
+	log.Printf("queue %s/%s: item leave the queue\n", m.name, subq)
+}
+
+func (m LogMetrics) SubQueueDrop(subq string) {
+	log.Printf("queue %s/%s: queue drop item\n", m.name, subq)
+}
