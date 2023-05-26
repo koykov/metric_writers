@@ -14,9 +14,9 @@ type PrometheusMetrics struct {
 }
 
 var (
-	promQueueSize, promSubQueueSize, promWorkerIdle, promWorkerActive, promWorkerSleep *prometheus.GaugeVec
+	promQueueSize, promSubqSize, promWorkerIdle, promWorkerActive, promWorkerSleep *prometheus.GaugeVec
 	promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost,
-	promSubQueueIn, promSubQueueOut, promSubQueueDrop *prometheus.CounterVec
+	promSubqIn, promSubqOut, promSubqLeak *prometheus.CounterVec
 
 	promWorkerWait *prometheus.HistogramVec
 
@@ -70,27 +70,27 @@ func init() {
 		Buckets: buckets,
 	}, []string{"queue"})
 
-	promSubQueueSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	promSubqSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "queue_subq_size",
 		Help: "Actual queue size.",
 	}, []string{"queue", "subq"})
-	promSubQueueIn = prometheus.NewCounterVec(prometheus.CounterOpts{
+	promSubqIn = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "queue_subq_in",
 		Help: "How many items comes to the sub-queue.",
 	}, []string{"queue", "subq"})
-	promSubQueueOut = prometheus.NewCounterVec(prometheus.CounterOpts{
+	promSubqOut = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "queue_subq_out",
 		Help: "How many items leaves sub-queue.",
 	}, []string{"queue", "subq"})
-	promSubQueueDrop = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "queue_subq_drop",
+	promSubqLeak = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "queue_subq_leak",
 		Help: "How many items dropped on the floor due to sub-queue is full.",
 	}, []string{"queue", "subq"})
 
 	prometheus.MustRegister(promWorkerIdle, promWorkerActive, promWorkerSleep, promQueueSize,
 		promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost,
 		promWorkerWait,
-		promSubQueueSize, promSubQueueIn, promSubQueueOut, promSubQueueDrop)
+		promSubqSize, promSubqIn, promSubqOut, promSubqLeak)
 }
 
 func NewPrometheusMetrics(name string) *PrometheusMetrics {
@@ -179,17 +179,17 @@ func (m PrometheusMetrics) QueueLost() {
 	promQueueSize.WithLabelValues(m.name).Dec()
 }
 
-func (m PrometheusMetrics) SubQueuePut(subq string) {
-	promSubQueueIn.WithLabelValues(m.name, subq).Inc()
-	promSubQueueSize.WithLabelValues(m.name, subq).Inc()
+func (m PrometheusMetrics) SubqPut(subq string) {
+	promSubqIn.WithLabelValues(m.name, subq).Inc()
+	promSubqSize.WithLabelValues(m.name, subq).Inc()
 }
 
-func (m PrometheusMetrics) SubQueuePull(subq string) {
-	promSubQueueOut.WithLabelValues(m.name, subq).Inc()
-	promSubQueueSize.WithLabelValues(m.name, subq).Dec()
+func (m PrometheusMetrics) SubqPull(subq string) {
+	promSubqOut.WithLabelValues(m.name, subq).Inc()
+	promSubqSize.WithLabelValues(m.name, subq).Dec()
 }
 
-func (m PrometheusMetrics) SubQueueDrop(subq string) {
-	promSubQueueDrop.WithLabelValues(m.name, subq).Inc()
-	promSubQueueSize.WithLabelValues(m.name, subq).Dec()
+func (m PrometheusMetrics) SubqLeak(subq string) {
+	promSubqLeak.WithLabelValues(m.name, subq).Inc()
+	promSubqSize.WithLabelValues(m.name, subq).Dec()
 }
