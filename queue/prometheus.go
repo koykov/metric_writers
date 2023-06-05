@@ -15,7 +15,7 @@ type PrometheusMetrics struct {
 
 var (
 	promQueueSize, promSubqSize, promWorkerIdle, promWorkerActive, promWorkerSleep *prometheus.GaugeVec
-	promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost,
+	promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueDeadline, promQueueLost,
 	promSubqIn, promSubqOut, promSubqLeak *prometheus.CounterVec
 
 	promWorkerWait *prometheus.HistogramVec
@@ -58,6 +58,10 @@ func init() {
 		Name: "queue_leak",
 		Help: "How many items dropped on the floor due to queue is full.",
 	}, []string{"queue", "dir"})
+	promQueueDeadline = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "queue_deadline",
+		Help: "How many processing skips due to deadline.",
+	}, []string{"queue"})
 	promQueueLost = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "queue_lost",
 		Help: "How many items throw to the trash due to force close.",
@@ -88,7 +92,7 @@ func init() {
 	}, []string{"queue", "subq"})
 
 	prometheus.MustRegister(promWorkerIdle, promWorkerActive, promWorkerSleep, promQueueSize,
-		promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost,
+		promQueueIn, promQueueOut, promQueueRetry, promQueueLeak, promQueueLost, promQueueDeadline,
 		promWorkerWait,
 		promSubqSize, promSubqIn, promSubqOut, promSubqLeak)
 }
@@ -171,6 +175,11 @@ func (m PrometheusMetrics) QueueLeak(dir q.LeakDirection) {
 		dirs = "front"
 	}
 	promQueueLeak.WithLabelValues(m.name, dirs).Inc()
+	promQueueSize.WithLabelValues(m.name).Dec()
+}
+
+func (m PrometheusMetrics) QueueDeadline() {
+	promQueueDeadline.WithLabelValues(m.name).Inc()
 	promQueueSize.WithLabelValues(m.name).Dec()
 }
 

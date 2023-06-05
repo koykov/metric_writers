@@ -69,6 +69,10 @@ func (m LogMetrics) QueueLeak(dir q.LeakDirection) {
 	log.Printf("queue %s: queue leak from %s\n", m.name, dirs)
 }
 
+func (m LogMetrics) QueueDeadline() {
+	log.Printf("queue %s: queue deadline\n", m.name)
+}
+
 func (m LogMetrics) QueueLost() {
 	log.Printf("queue %s: queue lost\n", m.name)
 }
