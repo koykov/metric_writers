@@ -30,3 +30,11 @@ func NewPrometheusMetricsWP(name string, precision time.Duration) *PrometheusMet
 func init() {
 	//
 }
+
+func (m PrometheusMetrics) FindIn()   {}
+func (m PrometheusMetrics) FindOut()  {}
+func (m PrometheusMetrics) FindFail() {}
+
+func (m PrometheusMetrics) BatchIn()   {}
+func (m PrometheusMetrics) BatchOut()  {}
+func (m PrometheusMetrics) BatchFail() {}
