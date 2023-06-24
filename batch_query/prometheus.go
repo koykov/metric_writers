@@ -1,6 +1,10 @@
 package batch_query
 
-import "time"
+import (
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 // PrometheusMetrics is a Prometheus implementation of batch_query.MetricsWriter.
 type PrometheusMetrics struct {
@@ -9,6 +13,10 @@ type PrometheusMetrics struct {
 }
 
 var (
+	promSize   *prometheus.GaugeVec
+	promIO     *prometheus.CounterVec
+	promTiming *prometheus.HistogramVec
+
 	_ = NewPrometheusMetrics
 )
 
@@ -28,13 +36,51 @@ func NewPrometheusMetricsWP(name string, precision time.Duration) *PrometheusMet
 }
 
 func init() {
-	//
+	promSize = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "batch_query_size",
+		Help: "Indicates entities distribution by types.",
+	}, []string{"query", "entity"})
+	promIO = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "batch_query_io",
+		Help: "How many entities processed.",
+	}, []string{"query", "entity", "type"})
+
+	buckets := append(prometheus.DefBuckets, []float64{15, 20, 30, 40, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 3000, 5000}...)
+	promTiming = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "batch_query_timing",
+		Help:    "How many worker waits due to delayed execution.",
+		Buckets: buckets,
+	}, []string{"query", "entity"})
+
+	prometheus.MustRegister(promSize, promIO, promTiming)
 }
 
-func (m PrometheusMetrics) FindIn()   {}
-func (m PrometheusMetrics) FindOut()  {}
-func (m PrometheusMetrics) FindFail() {}
+func (m PrometheusMetrics) FindIn() {
+	promSize.WithLabelValues(m.name, "single").Inc()
+	promIO.WithLabelValues(m.name, "single", "in").Inc()
+}
 
-func (m PrometheusMetrics) BatchIn()   {}
-func (m PrometheusMetrics) BatchOut()  {}
-func (m PrometheusMetrics) BatchFail() {}
+func (m PrometheusMetrics) FindOut() {
+	promSize.WithLabelValues(m.name, "single").Dec()
+	promIO.WithLabelValues(m.name, "single", "out").Inc()
+}
+
+func (m PrometheusMetrics) FindFail() {
+	promSize.WithLabelValues(m.name, "single").Dec()
+	promIO.WithLabelValues(m.name, "single", "fail").Inc()
+}
+
+func (m PrometheusMetrics) BatchIn() {
+	promSize.WithLabelValues(m.name, "batch").Inc()
+	promIO.WithLabelValues(m.name, "batch", "in").Inc()
+}
+
+func (m PrometheusMetrics) BatchOut() {
+	promSize.WithLabelValues(m.name, "batch").Dec()
+	promIO.WithLabelValues(m.name, "batch", "out").Inc()
+}
+
+func (m PrometheusMetrics) BatchFail() {
+	promSize.WithLabelValues(m.name, "batch").Dec()
+	promIO.WithLabelValues(m.name, "batch", "fail").Inc()
+}
