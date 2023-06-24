@@ -6,6 +6,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const (
+	single = "single"
+	batch  = "batch"
+
+	ioIn   = "in"
+	ioOut  = "out"
+	ioFail = "fail"
+)
+
 // PrometheusMetrics is a Prometheus implementation of batch_query.MetricsWriter.
 type PrometheusMetrics struct {
 	name string
@@ -56,31 +65,31 @@ func init() {
 }
 
 func (m PrometheusMetrics) FindIn() {
-	promSize.WithLabelValues(m.name, "single").Inc()
-	promIO.WithLabelValues(m.name, "single", "in").Inc()
+	promSize.WithLabelValues(m.name, single).Inc()
+	promIO.WithLabelValues(m.name, single, ioIn).Inc()
 }
 
 func (m PrometheusMetrics) FindOut() {
-	promSize.WithLabelValues(m.name, "single").Dec()
-	promIO.WithLabelValues(m.name, "single", "out").Inc()
+	promSize.WithLabelValues(m.name, single).Dec()
+	promIO.WithLabelValues(m.name, single, ioOut).Inc()
 }
 
 func (m PrometheusMetrics) FindFail() {
-	promSize.WithLabelValues(m.name, "single").Dec()
-	promIO.WithLabelValues(m.name, "single", "fail").Inc()
+	promSize.WithLabelValues(m.name, single).Dec()
+	promIO.WithLabelValues(m.name, single, ioFail).Inc()
 }
 
 func (m PrometheusMetrics) BatchIn() {
-	promSize.WithLabelValues(m.name, "batch").Inc()
-	promIO.WithLabelValues(m.name, "batch", "in").Inc()
+	promSize.WithLabelValues(m.name, batch).Inc()
+	promIO.WithLabelValues(m.name, batch, ioIn).Inc()
 }
 
 func (m PrometheusMetrics) BatchOut() {
-	promSize.WithLabelValues(m.name, "batch").Dec()
-	promIO.WithLabelValues(m.name, "batch", "out").Inc()
+	promSize.WithLabelValues(m.name, batch).Dec()
+	promIO.WithLabelValues(m.name, batch, ioOut).Inc()
 }
 
 func (m PrometheusMetrics) BatchFail() {
-	promSize.WithLabelValues(m.name, "batch").Dec()
-	promIO.WithLabelValues(m.name, "batch", "fail").Inc()
+	promSize.WithLabelValues(m.name, batch).Dec()
+	promIO.WithLabelValues(m.name, batch, ioFail).Inc()
 }
