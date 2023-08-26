@@ -13,6 +13,7 @@ const (
 	ioIn   = "in"
 	ioOut  = "out"
 	ioFail = "fail"
+	ioTO   = "timeout"
 )
 
 // PrometheusMetrics is a Prometheus implementation of batch_query.MetricsWriter.
@@ -72,6 +73,11 @@ func (m PrometheusMetrics) FindIn() {
 func (m PrometheusMetrics) FindOut() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioOut).Inc()
+}
+
+func (m PrometheusMetrics) FindTimeout() {
+	promSize.WithLabelValues(m.name, single).Dec()
+	promIO.WithLabelValues(m.name, single, ioTO).Inc()
 }
 
 func (m PrometheusMetrics) FindFail() {
