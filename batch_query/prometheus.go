@@ -65,22 +65,22 @@ func init() {
 	prometheus.MustRegister(promSize, promIO, promTiming)
 }
 
-func (m PrometheusMetrics) FindIn() {
+func (m PrometheusMetrics) FetchIn() {
 	promSize.WithLabelValues(m.name, single).Inc()
 	promIO.WithLabelValues(m.name, single, ioIn).Inc()
 }
 
-func (m PrometheusMetrics) FindOut() {
+func (m PrometheusMetrics) FetchOut() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioOut).Inc()
 }
 
-func (m PrometheusMetrics) FindTimeout() {
+func (m PrometheusMetrics) FetchTimeout() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioTO).Inc()
 }
 
-func (m PrometheusMetrics) FindFail() {
+func (m PrometheusMetrics) FetchFail() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioFail).Inc()
 }
