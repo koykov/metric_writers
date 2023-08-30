@@ -11,7 +11,7 @@ const (
 	batch  = "batch"
 
 	ioIn   = "in"
-	ioOut  = "out"
+	ioOK   = "success"
 	ioFail = "fail"
 	ioTO   = "timeout"
 )
@@ -72,7 +72,7 @@ func (m PrometheusMetrics) Fetch() {
 
 func (m PrometheusMetrics) OK() {
 	promSize.WithLabelValues(m.name, single).Dec()
-	promIO.WithLabelValues(m.name, single, ioOut).Inc()
+	promIO.WithLabelValues(m.name, single, ioOK).Inc()
 }
 
 func (m PrometheusMetrics) Timeout() {
@@ -92,7 +92,7 @@ func (m PrometheusMetrics) Batch() {
 
 func (m PrometheusMetrics) BatchOK() {
 	promSize.WithLabelValues(m.name, batch).Dec()
-	promIO.WithLabelValues(m.name, batch, ioOut).Inc()
+	promIO.WithLabelValues(m.name, batch, ioOK).Inc()
 }
 
 func (m PrometheusMetrics) BatchFail() {
