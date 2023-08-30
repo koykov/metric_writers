@@ -65,32 +65,32 @@ func init() {
 	prometheus.MustRegister(promSize, promIO, promTiming)
 }
 
-func (m PrometheusMetrics) FetchIn() {
+func (m PrometheusMetrics) Fetch() {
 	promSize.WithLabelValues(m.name, single).Inc()
 	promIO.WithLabelValues(m.name, single, ioIn).Inc()
 }
 
-func (m PrometheusMetrics) FetchOut() {
+func (m PrometheusMetrics) OK() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioOut).Inc()
 }
 
-func (m PrometheusMetrics) FetchTimeout() {
+func (m PrometheusMetrics) Timeout() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioTO).Inc()
 }
 
-func (m PrometheusMetrics) FetchFail() {
+func (m PrometheusMetrics) Fail() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioFail).Inc()
 }
 
-func (m PrometheusMetrics) BatchIn() {
+func (m PrometheusMetrics) Batch() {
 	promSize.WithLabelValues(m.name, batch).Inc()
 	promIO.WithLabelValues(m.name, batch, ioIn).Inc()
 }
 
-func (m PrometheusMetrics) BatchOut() {
+func (m PrometheusMetrics) BatchOK() {
 	promSize.WithLabelValues(m.name, batch).Dec()
 	promIO.WithLabelValues(m.name, batch, ioOut).Inc()
 }
