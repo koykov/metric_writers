@@ -71,9 +71,10 @@ func (m PrometheusMetrics) Fetch() {
 	promIO.WithLabelValues(m.name, single, ioIn).Inc()
 }
 
-func (m PrometheusMetrics) OK() {
+func (m PrometheusMetrics) OK(dur time.Duration) {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioOK).Inc()
+	promTiming.WithLabelValues(m.name, single).Observe(float64(dur / m.prec))
 }
 
 func (m PrometheusMetrics) NotFound() {
@@ -96,9 +97,10 @@ func (m PrometheusMetrics) Batch() {
 	promIO.WithLabelValues(m.name, batch, ioIn).Inc()
 }
 
-func (m PrometheusMetrics) BatchOK() {
+func (m PrometheusMetrics) BatchOK(dur time.Duration) {
 	promSize.WithLabelValues(m.name, batch).Dec()
 	promIO.WithLabelValues(m.name, batch, ioOK).Inc()
+	promTiming.WithLabelValues(m.name, batch).Observe(float64(dur / m.prec))
 }
 
 func (m PrometheusMetrics) BatchFail() {
