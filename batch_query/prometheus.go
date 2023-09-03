@@ -9,6 +9,7 @@ import (
 const (
 	single = "single"
 	batch  = "batch"
+	buffer = "buffer"
 
 	ioIn   = "in"
 	ioOK   = "success"
@@ -26,6 +27,7 @@ type PrometheusMetrics struct {
 var (
 	promSize   *prometheus.GaugeVec
 	promIO     *prometheus.CounterVec
+	promBufIO  *prometheus.CounterVec
 	promTiming *prometheus.HistogramVec
 
 	_ = NewPrometheusMetrics
@@ -55,6 +57,10 @@ func init() {
 		Name: "batch_query_io",
 		Help: "How many entities processed.",
 	}, []string{"query", "entity", "type"})
+	promBufIO = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "batch_query_bufio",
+		Help: "Buffer operations.",
+	}, []string{"query", "reason"})
 
 	buckets := append(prometheus.DefBuckets, []float64{15, 20, 30, 40, 50, 100, 150, 200, 250, 500, 1000, 1500, 2000, 3000, 5000}...)
 	promTiming = prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -63,7 +69,7 @@ func init() {
 		Buckets: buckets,
 	}, []string{"query", "entity"})
 
-	prometheus.MustRegister(promSize, promIO, promTiming)
+	prometheus.MustRegister(promSize, promIO, promBufIO, promTiming)
 }
 
 func (m PrometheusMetrics) Fetch() {
@@ -106,4 +112,13 @@ func (m PrometheusMetrics) BatchOK(dur time.Duration) {
 func (m PrometheusMetrics) BatchFail() {
 	promSize.WithLabelValues(m.name, batch).Dec()
 	promIO.WithLabelValues(m.name, batch, ioFail).Inc()
+}
+
+func (m PrometheusMetrics) BufferIn(reason string) {
+	promSize.WithLabelValues(m.name, buffer).Inc()
+	promBufIO.WithLabelValues(m.name, reason).Inc()
+}
+
+func (m PrometheusMetrics) BufferOut() {
+	promSize.WithLabelValues(m.name, buffer).Dec()
 }
