@@ -14,6 +14,7 @@ const (
 	ioIn   = "in"
 	ioOK   = "success"
 	ioTO   = "timeout"
+	ioInt  = "interrupt"
 	io404  = "not_found"
 	ioFail = "fail"
 )
@@ -91,6 +92,11 @@ func (m PrometheusMetrics) NotFound() {
 func (m PrometheusMetrics) Timeout() {
 	promSize.WithLabelValues(m.name, single).Dec()
 	promIO.WithLabelValues(m.name, single, ioTO).Inc()
+}
+
+func (m PrometheusMetrics) Interrupt() {
+	promSize.WithLabelValues(m.name, single).Dec()
+	promIO.WithLabelValues(m.name, single, ioInt).Inc()
 }
 
 func (m PrometheusMetrics) Fail() {
